@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <title>توليد كود QR للموقع</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="container" style="text-align: center;">
+    <h2>رمز الـ QR الخاص بالمنصة</h2>
+    <p>امسح الكود التالي للوصول المباشر إلى دليل الموظفين والشركات:</p>
+    <br>
+    <div class="card" style="display: inline-block; padding: 2rem;">
+        <img id="qr-code-img" src="" alt="QR Code">
+    </div>
+
+    <script>
+        const siteUrl = window.location.origin + '/index.html';
+        document.getElementById('qr-code-img').src = `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(siteUrl)}`;
+    </script>
+</body>
+</html>

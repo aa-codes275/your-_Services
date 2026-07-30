@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>لوحة التحكم | Your Services</title>
+<meta name="robots" content="noindex,nofollow" />
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+<link rel="stylesheet" href="style.css">
+<style>
+  .login-wrap{min-height:100vh;display:grid;place-items:center;padding:20px}
+  .login{width:min(400px,100%);padding:30px;display:grid;gap:14px}
+  .adm{display:none}
+  .adm.on{display:block}
+  .adm-nav{display:flex;gap:8px;flex-wrap:wrap;margin:22px 0}
+  .panel{display:none;padding:22px;margin-bottom:20px}
+  .panel.on{display:block}
+  .tbl{width:100%;border-collapse:collapse;font-size:.86rem;min-width:520px}
+  .tbl th,.tbl td{padding:10px;border-bottom:1px solid var(--stroke);text-align:right}
+  .tbl th{color:var(--mut);font-weight:700;font-size:.8rem}
+  .scroll{overflow-x:auto;-webkit-overflow-scrolling:touch}
+  .mini{display:inline-flex;gap:6px}
+  .ibtn{border:1px solid var(--stroke);background:rgba(255,255,255,.05);color:var(--txt);
+    width:32px;height:32px;border-radius:10px;cursor:pointer}
+  .ibtn.del:hover{background:#ef4444;border-color:transparent}
+  .ibtn:hover{background:var(--grad);border-color:transparent}
+  .fgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin-bottom:14px}
+  .fgrid label{display:grid;gap:6px;font-size:.82rem;color:var(--mut)}
+  .fgrid input,.fgrid select,.fgrid textarea{background:rgba(255,255,255,.05);border:1px solid var(--stroke);
+    border-radius:12px;padding:10px 12px;color:var(--txt);font:inherit;font-size:.9rem;outline:0;width:100%}
+  .fgrid option{background:#0b1230}
+  .adm-head{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:12px;align-items:center;padding-top:22px}
+  @media(max-width:520px){.panel{padding:16px}}
+</style>
+</head>
+<body>
+<div class="aurora"><span></span><span></span><span></span></div>
+
+<!-- LOGIN -->
+<div class="login-wrap" id="loginWrap">
+  <form class="card login" id="loginForm">
+    <div class="brand" style="justify-content:center"><span class="brand-mark"><i class="fa-solid fa-bolt"></i></span>
+      <span class="brand-txt">Your <b>Services</b></span></div>
+    <h2 style="text-align:center;font-size:1.1rem">لوحة التحكم</h2>
+    <div class="fgrid" style="grid-template-columns:1fr">
+      <label>اسم المستخدم<input id="lu" autocomplete="username" placeholder="admin@superoffice.com"></label>
+      <label>كلمة المرور<input id="lp" type="password" autocomplete="current-password" placeholder="admin123"></label>
+    </div>
+    <button class="btn btn-glow" type="submit">دخول</button>
+    <a href="index.html" style="color:var(--mut);font-size:.82rem;text-align:center">← رجوع للموقع</a>
+  </form>
+</div>
+
+<!-- ADMIN -->
+<div class="adm container" id="adm">
+  <div class="adm-head">
+    <div class="brand"><span class="brand-mark"><i class="fa-solid fa-bolt"></i></span><span class="brand-txt">لوحة <b>التحكم</b></span></div>
+    <div class="mini">
+      <a class="btn btn-ghost btn-sm" href="index.html"><i class="fa-solid fa-globe"></i> الموقع</a>
+      <button class="btn btn-ghost btn-sm" id="logout">خروج</button>
+    </div>
+  </div>
+
+  <div class="adm-nav">
+    <button class="chip on" data-p="cats">التصنيفات</button>
+    <button class="chip" data-p="cos">الشركات</button>
+    <button class="chip" data-p="emps">الموظفون</button>
+    <button class="chip" data-p="revs">التقييمات والتعليقات</button>
+    <button class="chip" data-p="set">الإعدادات</button>
+  </div>
+
+  <section class="card panel on" id="p-cats">
+    <h3>التصنيفات</h3>
+    <div class="fgrid">
+      <label>الاسم<input id="cName" placeholder="مثال: خدمات لوجستية"></label>
+    </div>
+    <button class="btn btn-glow btn-sm" id="cAdd"><i class="fa-solid fa-plus"></i> إضافة تصنيف</button>
+    <div class="scroll"><table class="tbl" id="cTbl"></table></div>
+  </section>
+
+  <section class="card panel" id="p-cos">
+    <h3>الشركات</h3>
+    <div class="fgrid">
+      <label>اسم الشركة<input id="kName"></label>
+      <label>التصنيف<select id="kCat"></select></label>
+      <label>رابط شعار الشركة (Logo URL)<input id="kImage" placeholder="https://example.com/logo.jpg"></label>
+    </div>
+    <button class="btn btn-glow btn-sm" id="kAdd"><i class="fa-solid fa-plus"></i> إضافة شركة</button>
+    <div class="scroll"><table class="tbl" id="kTbl"></table></div>
+  </section>
+
+  <section class="card panel" id="p-emps">
+    <h3>الموظفون</h3>
+    <div class="fgrid">
+      <label>الشركة<select id="eCo"></select></label>
+      <label>الاسم<input id="eName"></label>
+      <label>المسمى الوظيفي<input id="eRole"></label>
+      <label>الجوال (واتساب)<input id="ePhone" placeholder="9665xxxxxxx"></label>
+      <label>رابط السيرة الذاتية (CV)<input id="eCv" placeholder="رابط الـ CV"></label>
+      <label>رابط صورة الموظف (Image URL)<input id="eImage" placeholder="https://example.com/emp.jpg"></label>
+    </div>
+    <button class="btn btn-glow btn-sm" id="eAdd"><i class="fa-solid fa-plus"></i> إضافة موظف</button>
+    <div class="scroll"><table class="tbl" id="eTbl"></table></div>
+  </section>
+
+  <section class="card panel" id="p-revs">
+    <h3>التقييمات والتعليقات</h3>
+    <div class="scroll"><table class="tbl" id="rTbl"></table></div>
+  </section>
+
+  <section class="card panel" id="p-set">
+    <h3>الإعدادات</h3>
+    <div class="fgrid">
+      <label>رقم واتساب<input id="sWa" placeholder="9665xxxxxxx"></label>
+      <label>البريد الإلكتروني العام<input id="sMail"></label>
+      <label>إيميل الأدمن (تسجيل الدخول)<input id="sUser"></label>
+      <label>كلمة مرور الأدمن<input id="sPass"></label>
+    </div>
+    <button class="btn btn-glow btn-sm" id="sSave"><i class="fa-solid fa-floppy-disk"></i> حفظ التعديلات</button>
+  </section>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="script.js"></script>
+<script>
+const $ = s => document.querySelector(s);
+const SKEY = 'ys_admin_ok';
+
+async function showAdmin(){ 
+  $('#loginWrap').style.display='none'; 
+  $('#adm').classList.add('on'); 
+  await loadDBFromSupabase();
+  renderAll(); 
+}
+
+if(sessionStorage.getItem(SKEY)==='1') {
+  showAdmin();
+} else {
+  loadDBFromSupabase();
+}
+
+$('#loginForm').onsubmit = async e => {
+  e.preventDefault();
+  await loadDBFromSupabase();
+  const enteredUser = $('#lu').value.trim();
+  const enteredPass = $('#lp').value.trim();
+  const sysUser = DB?.admin_users?.[0]?.email || 'admin@superoffice.com';
+  const sysPass = DB?.admin_users?.[0]?.password_hash || 'admin123';
+
+  if(enteredUser === sysUser && enteredPass === sysPass){ 
+    sessionStorage.setItem(SKEY,'1'); 
+    showAdmin(); 
+  } else {
+    alert('اسم المستخدم أو كلمة المرور غير صحيحة');
+  }
+};
+
+$('#logout').onclick = () => { sessionStorage.removeItem(SKEY); location.reload(); };
+
+document.querySelectorAll('.adm-nav .chip').forEach(b => b.onclick = () => {
+  document.querySelectorAll('.adm-nav .chip').forEach(x=>x.classList.remove('on'));
+  document.querySelectorAll('.panel').forEach(x=>x.classList.remove('on'));
+  b.classList.add('on'); $('#p-'+b.dataset.p).classList.add('on');
+});
+
+async function renderAll(){ rCats(); rCos(); rEmps(); rRevs(); rSet(); fillSelects(); }
+
+function fillSelects(){
+  if(DB.categories) $('#kCat').innerHTML = DB.categories.map(c=>`<option value="${c.id}">${c.name}</option>`).join('');
+  if(DB.companies) $('#eCo').innerHTML  = DB.companies.map(k=>`<option value="${k.id}">${k.name}</option>`).join('');
+}
+
+function rCats(){
+  $('#cTbl').innerHTML = `<tr><th>التصنيف</th><th>الشركات</th><th></th></tr>` +
+    (DB.categories || []).map(c=>`<tr><td>${c.name}</td>
+      <td>${(DB.companies || []).filter(k=>k.category_id === c.id).length}</td>
+      <td class="mini">
+      <button class="ibtn del" onclick="delCat('${c.id}')"><i class="fa-solid fa-trash"></i></button></td></tr>`).join('');
+}
+
+$('#cAdd').onclick = async () => {
+  const name = $('#cName').value.trim(); if(!name) return alert('أدخل اسم التصنيف');
+  const { error } = await supabaseClient.from('categories').insert([{ name }]);
+  if(error) return alert('خطأ: ' + error.message);
+  await loadDBFromSupabase(); renderAll();
+  $('#cName').value = '';
+};
+
+window.delCat = async id => { 
+  if(!confirm('حذف التصنيف؟')) return;
+  await supabaseClient.from('categories').delete().eq('id', id);
+  await loadDBFromSupabase(); renderAll(); 
+};
+
+function rCos(){
+  $('#kTbl').innerHTML = `<tr><th>الشركة</th><th>التصنيف</th><th></th></tr>` +
+    (DB.companies || []).map(k=>{ const c=(DB.categories || []).find(x=>x.id === k.category_id);
+      return `<tr><td>
+      <div style="display:flex;align-items:center;gap:8px">
+        ${k.logo_url ? `<img src="${k.logo_url}" style="width:32px;height:32px;border-radius:6px;object-fit:cover">` : ''}
+        <div>${k.name}</div>
+      </div></td>
+      <td>${c?c.name:'—'}</td>
+      <td class="mini">
+      <button class="ibtn del" onclick="delCo('${k.id}')"><i class="fa-solid fa-trash"></i></button></td></tr>`;}).join('');
+}
+
+$('#kAdd').onclick = async () => {
+  const name = $('#kName').value.trim(); if(!name) return alert('أدخل اسم الشركة');
+  const newCo = {
+    name, 
+    category_id: parseInt($('#kCat').value), 
+    logo_url: $('#kImage').value.trim()
+  };
+
+  const { error } = await supabaseClient.from('companies').insert([newCo]);
+  if(error) return alert('خطأ أثناء إضافة الشركة: ' + error.message);
+  
+  alert('تم إضافة الشركة بنجاح!');
+  await loadDBFromSupabase(); renderAll();
+  $('#kName').value = ''; $('#kImage').value = '';
+};
+
+window.delCo = async id => {
+  if(!confirm('حذف الشركة؟')) return;
+  await supabaseClient.from('companies').delete().eq('id', id);
+  await loadDBFromSupabase(); renderAll();
+};
+
+function rEmps(){
+  $('#eTbl').innerHTML = `<tr><th>الموظف</th><th>الشركة</th><th></th></tr>` +
+    (DB.employees || []).map(e=>{ const k=(DB.companies || []).find(x=>x.id === e.company_id);
+      return `<tr><td>
+      <div style="display:flex;align-items:center;gap:8px">
+        ${e.image_url ? `<img src="${e.image_url}" style="width:32px;height:32px;border-radius:50%;object-fit:cover">` : ''}
+        <div>${e.name}<div style="color:var(--mut);font-size:.75rem">${e.title||''}</div></div>
+      </div></td>
+      <td>${k?k.name:'—'}</td>
+      <td class="mini">
+      <button class="ibtn del" onclick="delEmp('${e.id}')"><i class="fa-solid fa-trash"></i></button></td></tr>`;}).join('');
+}
+
+$('#eAdd').onclick = async () => {
+  const coId = $('#eCo').value, name = $('#eName').value.trim();
+  if(!coId || !name) return alert('أدخل البيانات الأساسية للموظف');
+
+  const newEmp = {
+    company_id: parseInt(coId), 
+    name, 
+    title: $('#eRole').value.trim(), 
+    phone: $('#ePhone').value.trim(), 
+    cv_url: $('#eCv').value.trim(),
+    image_url: $('#eImage').value.trim()
+  };
+
+  const { error } = await supabaseClient.from('employees').insert([newEmp]);
+  if(error) return alert('خطأ أثناء إضافة الموظف: ' + error.message);
+  
+  alert('تم إضافة الموظف بنجاح!');
+  await loadDBFromSupabase(); renderAll();
+  $('#eName').value = ''; $('#eRole').value = ''; $('#ePhone').value = ''; $('#eCv').value = ''; $('#eImage').value = '';
+};
+
+window.delEmp = async id => {
+  if(!confirm('حذف الموظف؟')) return;
+  await supabaseClient.from('employees').delete().eq('id', id);
+  await loadDBFromSupabase(); renderAll();
+};
+
+function rRevs(){
+  $('#rTbl').innerHTML = `<tr><th>الموظف</th><th>التعليق</th><th>النجوم</th><th></th></tr>` +
+    ((DB.reviews && DB.reviews.length) ? DB.reviews.map(r=>{ const e=(DB.employees || []).find(x=>x.id === r.employee_id);
+      return `<tr><td>${e?e.name:'—'}</td>
+      <td>${r.comment_text}</td><td style="color:#f59e0b">${'★'.repeat(r.rating_stars)}</td>
+      <td class="mini">
+      <button class="ibtn del" onclick="delRev('${r.id}')"><i class="fa-solid fa-trash"></i></button></td></tr>`;}).join('')
+    : `<tr><td colspan="4" style="color:var(--mut)">لا توجد تقييمات</td></tr>`);
+}
+
+window.delRev = async id => {
+  if(!confirm('حذف التقييم؟')) return;
+  await supabaseClient.from('reviews').delete().eq('id', id);
+  await loadDBFromSupabase(); renderAll();
+};
+
+function rSet(){
+  if(DB.settings && DB.settings[0]){
+    $('#sWa').value = DB.settings[0].whatsapp || ''; 
+    $('#sMail').value = DB.settings[0].email || '';
+  }
+  if(DB.admin_users && DB.admin_users[0]){
+    $('#sUser').value = DB.admin_users[0].email || ''; 
+    $('#sPass').value = DB.admin_users[0].password_hash || '';
+  }
+}
+
+$('#sSave').onclick = async () => {
+  const newEmail = $('#sUser').value.trim();
+  const newPass = $('#sPass').value.trim();
+  const newWa = $('#sWa').value.trim();
+  const newSiteMail = $('#sMail').value.trim();
+
+  await Promise.all([
+    supabaseClient.from('admin_users').update({ email: newEmail, password_hash: newPass }).eq('id', 1),
+    supabaseClient.from('settings').update({ whatsapp: newWa, email: newSiteMail }).eq('id', 1)
+  ]);
+
+  await loadDBFromSupabase();
+  alert('تم حفظ الإعدادات بنجاح ✔');
+};
+</script>
+</body>
+</html>
