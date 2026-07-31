@@ -101,7 +101,6 @@
     </div>
   </div>
 </section>
-
 <!-- ===== CONTACT ===== -->
 <section class="sec" id="contact">
   <div class="container">
@@ -116,13 +115,12 @@
           <label>رقم الجوال<input required name="phone" placeholder="05xxxxxxxx"></label>
         </div>
         <label>الخدمة المطلوبة
-          <select name="service" id="serviceSelect"></select>
+          <input type="text" name="service" id="serviceInput" placeholder="اكتب الخدمة أو التخصص الذي تحتاجه..." required>
         </label>
         
-        <!-- حقل إضافة صورة الشركة أو العميل المحدث -->
-        <label>
-          صورة الشركة / العميل (اختياري)
-          <input type="file" id="imageFile" accept="image/*">
+        <!-- حقل اسم الشركة أو الجهة (بدل الصورة) -->
+        <label>اسم الشركة / الجهة (اختياري)
+          <input type="text" name="company" id="companyInput" placeholder="اكتب اسم شركتك أو جهة عملك...">
         </label>
 
         <label>تفاصيل الطلب<textarea name="details" rows="4" placeholder="اشرح لنا ما تحتاجه..."></textarea></label>
