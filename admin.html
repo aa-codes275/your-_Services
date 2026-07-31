@@ -22,8 +22,9 @@
   .scroll{overflow-x:auto;-webkit-overflow-scrolling:touch}
   .mini{display:inline-flex;gap:6px}
   .ibtn{border:1px solid var(--stroke);background:rgba(255,255,255,.05);color:var(--txt);
-    width:32px;height:32px;border-radius:10px;cursor:pointer}
+    width:32px;height:32px;border-radius:10px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center}
   .ibtn.del:hover{background:#ef4444;border-color:transparent}
+  .ibtn.hide-btn:hover{background:#f59e0b;border-color:transparent}
   .ibtn:hover{background:var(--grad);border-color:transparent}
   .fgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin-bottom:14px}
   .fgrid label{display:grid;gap:6px;font-size:.82rem;color:var(--mut)}
@@ -31,6 +32,74 @@
     border-radius:12px;padding:10px 12px;color:var(--txt);font:inherit;font-size:.9rem;outline:0;width:100%}
   .fgrid option{background:#0b1230}
   .adm-head{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:12px;align-items:center;padding-top:22px}
+  
+  /* Grid Cards System for Companies, Employees & Reviews */
+  .cards-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 16px;
+    margin-top: 15px;
+  }
+  .admin-card {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid var(--stroke);
+    border-radius: 16px;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    position: relative;
+    transition: 0.2s;
+  }
+  .admin-card.hidden-item {
+    opacity: 0.5;
+    border-style: dashed;
+  }
+  .admin-card-top {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .admin-card-img {
+    width: 50px;
+    height: 50px;
+    border-radius: 12px;
+    object-fit: cover;
+    background: rgba(255,255,255,0.05);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    color: var(--txt);
+  }
+  .admin-card-info h4 {
+    margin: 0;
+    font-size: 1rem;
+    color: var(--txt);
+  }
+  .admin-card-info span {
+    font-size: 0.8rem;
+    color: var(--mut);
+  }
+  .admin-card-actions {
+    display: flex;
+    gap: 8px;
+    border-top: 1px solid var(--stroke);
+    padding-top: 10px;
+    justify-content: flex-end;
+  }
+
+  /* Modal Styling */
+  .modal-overlay {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0,0,0,0.7); display: none; place-items: center; z-index: 1000; padding: 20px;
+  }
+  .modal-overlay.on { display: grid; }
+  .modal-box {
+    background: #0f172a; border: 1px solid var(--stroke); border-radius: 20px;
+    padding: 24px; width: min(450px, 100%); display: grid; gap: 14px;
+  }
+
   @media(max-width:520px){.panel{padding:16px}}
 </style>
 </head>
@@ -79,6 +148,7 @@
     <div class="scroll"><table class="tbl" id="cTbl"></table></div>
   </section>
 
+  <!-- الشركات (مربعات) -->
   <section class="card panel" id="p-cos">
     <h3>الشركات</h3>
     <div class="fgrid">
@@ -87,9 +157,10 @@
       <label>رابط شعار الشركة (Logo URL)<input id="kImage" placeholder="https://example.com/logo.jpg"></label>
     </div>
     <button class="btn btn-glow btn-sm" id="kAdd"><i class="fa-solid fa-plus"></i> إضافة شركة</button>
-    <div class="scroll"><table class="tbl" id="kTbl"></table></div>
+    <div class="cards-grid" id="kCardsGrid"></div>
   </section>
 
+  <!-- الموظفون (مربعات) -->
   <section class="card panel" id="p-emps">
     <h3>الموظفون</h3>
     <div class="fgrid">
@@ -101,12 +172,13 @@
       <label>رابط صورة الموظف (Image URL)<input id="eImage" placeholder="https://example.com/emp.jpg"></label>
     </div>
     <button class="btn btn-glow btn-sm" id="eAdd"><i class="fa-solid fa-plus"></i> إضافة موظف</button>
-    <div class="scroll"><table class="tbl" id="eTbl"></table></div>
+    <div class="cards-grid" id="eCardsGrid"></div>
   </section>
 
+  <!-- التقييمات والتعليقات (مربعات) -->
   <section class="card panel" id="p-revs">
     <h3>التقييمات والتعليقات</h3>
-    <div class="scroll"><table class="tbl" id="rTbl"></table></div>
+    <div class="cards-grid" id="rCardsGrid"></div>
   </section>
 
   <section class="card panel" id="p-set">
@@ -119,6 +191,18 @@
     </div>
     <button class="btn btn-glow btn-sm" id="sSave"><i class="fa-solid fa-floppy-disk"></i> حفظ التعديلات</button>
   </section>
+</div>
+
+<!-- Modal تعديل عام -->
+<div class="modal-overlay" id="editModal">
+  <div class="modal-box">
+    <h3 id="modalTitle">تعديل البيانات</h3>
+    <div id="modalBody" class="fgrid" style="grid-template-columns:1fr"></div>
+    <div style="display:flex;gap:10px;justify-content:flex-end">
+      <button class="btn btn-ghost btn-sm" onclick="closeEditModal()">إلغاء</button>
+      <button class="btn btn-glow btn-sm" id="saveEditBtn">حفظ التغييرات</button>
+    </div>
+  </div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -174,7 +258,7 @@ function fillSelects(){
 function rCats(){
   $('#cTbl').innerHTML = `<tr><th>التصنيف</th><th>الشركات</th><th></th></tr>` +
     (DB.categories || []).map(c=>`<tr><td>${c.name}</td>
-      <td>${(DB.companies || []).filter(k=>k.category_id === c.id).length}</td>
+      <td>${(DB.companies || []).filter(k=>String(k.category_id || k.catId) === String(c.id)).length}</td>
       <td class="mini">
       <button class="ibtn del" onclick="delCat('${c.id}')"><i class="fa-solid fa-trash"></i></button></td></tr>`).join('');
 }
@@ -193,17 +277,32 @@ window.delCat = async id => {
   await loadDBFromSupabase(); renderAll(); 
 };
 
+/* --- عرض الشركات بشكل مربعات Cards --- */
 function rCos(){
-  $('#kTbl').innerHTML = `<tr><th>الشركة</th><th>التصنيف</th><th></th></tr>` +
-    (DB.companies || []).map(k=>{ const c=(DB.categories || []).find(x=>x.id === k.category_id);
-      return `<tr><td>
-      <div style="display:flex;align-items:center;gap:8px">
-        ${k.logo_url ? `<img src="${k.logo_url}" style="width:32px;height:32px;border-radius:6px;object-fit:cover">` : ''}
-        <div>${k.name}</div>
-      </div></td>
-      <td>${c?c.name:'—'}</td>
-      <td class="mini">
-      <button class="ibtn del" onclick="delCo('${k.id}')"><i class="fa-solid fa-trash"></i></button></td></tr>`;}).join('');
+  const grid = $('#kCardsGrid');
+  if(!grid) return;
+  grid.innerHTML = (DB.companies || []).map(k => {
+    const c = (DB.categories || []).find(x => String(x.id) === String(k.category_id || k.catId));
+    const isHidden = k.isHidden || k.is_hidden;
+    const logoUrl = k.logo_url || k.image;
+    return `
+      <div class="admin-card ${isHidden ? 'hidden-item' : ''}">
+        <div class="admin-card-top">
+          ${logoUrl ? `<img src="${logoUrl}" class="admin-card-img">` : `<div class="admin-card-img"><i class="fa-solid fa-building"></i></div>`}
+          <div class="admin-card-info">
+            <h4>${k.name}</h4>
+            <span>التصنيف: ${c ? c.name : '—'}</span>
+            ${isHidden ? '<div style="color:#f59e0b;font-size:0.75rem">مخفي عن الزوار</div>' : ''}
+          </div>
+        </div>
+        <div class="admin-card-actions">
+          <button class="ibtn hide-btn" title="${isHidden ? 'إظهار' : 'إخفاء'}" onclick="toggleHideCo('${k.id}', ${!isHidden})"><i class="fa-solid ${isHidden ? 'fa-eye' : 'fa-eye-slash'}"></i></button>
+          <button class="ibtn" title="تعديل" onclick="openEditCo('${k.id}')"><i class="fa-solid fa-pen"></i></button>
+          <button class="ibtn del" title="حذف" onclick="delCo('${k.id}')"><i class="fa-solid fa-trash"></i></button>
+        </div>
+      </div>
+    `;
+  }).join('') || '<p style="color:var(--mut)">لا توجد شركات مضافة.</p>';
 }
 
 $('#kAdd').onclick = async () => {
@@ -213,11 +312,8 @@ $('#kAdd').onclick = async () => {
     category_id: parseInt($('#kCat').value), 
     logo_url: $('#kImage').value.trim()
   };
-
   const { error } = await supabaseClient.from('companies').insert([newCo]);
-  if(error) return alert('خطأ أثناء إضافة الشركة: ' + error.message);
-  
-  alert('تم إضافة الشركة بنجاح!');
+  if(error) return alert('خطأ: ' + error.message);
   await loadDBFromSupabase(); renderAll();
   $('#kName').value = ''; $('#kImage').value = '';
 };
@@ -228,23 +324,43 @@ window.delCo = async id => {
   await loadDBFromSupabase(); renderAll();
 };
 
+window.toggleHideCo = async (id, status) => {
+  await supabaseClient.from('companies').update({ is_hidden: status }).eq('id', id);
+  await loadDBFromSupabase(); renderAll();
+};
+
+/* --- عرض الموظفين بشكل مربعات Cards --- */
 function rEmps(){
-  $('#eTbl').innerHTML = `<tr><th>الموظف</th><th>الشركة</th><th></th></tr>` +
-    (DB.employees || []).map(e=>{ const k=(DB.companies || []).find(x=>x.id === e.company_id);
-      return `<tr><td>
-      <div style="display:flex;align-items:center;gap:8px">
-        ${e.image_url ? `<img src="${e.image_url}" style="width:32px;height:32px;border-radius:50%;object-fit:cover">` : ''}
-        <div>${e.name}<div style="color:var(--mut);font-size:.75rem">${e.title||''}</div></div>
-      </div></td>
-      <td>${k?k.name:'—'}</td>
-      <td class="mini">
-      <button class="ibtn del" onclick="delEmp('${e.id}')"><i class="fa-solid fa-trash"></i></button></td></tr>`;}).join('');
+  const grid = $('#eCardsGrid');
+  if(!grid) return;
+  grid.innerHTML = (DB.employees || []).map(e => {
+    const k = (DB.companies || []).find(x => String(x.id) === String(e.company_id || e.companyId));
+    const isHidden = e.isHidden || e.is_hidden;
+    const imgUrl = e.image_url || e.image;
+    return `
+      <div class="admin-card ${isHidden ? 'hidden-item' : ''}">
+        <div class="admin-card-top">
+          ${imgUrl ? `<img src="${imgUrl}" class="admin-card-img" style="border-radius:50%">` : `<div class="admin-card-img" style="border-radius:50%"><i class="fa-solid fa-user"></i></div>`}
+          <div class="admin-card-info">
+            <h4>${e.name}</h4>
+            <span>${e.title || e.role || 'بدون مسمى'}</span>
+            <div style="font-size:0.75rem;color:var(--c2)">${k ? k.name : '—'}</div>
+            ${isHidden ? '<div style="color:#f59e0b;font-size:0.75rem">مخفي عن الزوار</div>' : ''}
+          </div>
+        </div>
+        <div class="admin-card-actions">
+          <button class="ibtn hide-btn" title="${isHidden ? 'إظهار' : 'إخفاء'}" onclick="toggleHideEmp('${e.id}', ${!isHidden})"><i class="fa-solid ${isHidden ? 'fa-eye' : 'fa-eye-slash'}"></i></button>
+          <button class="ibtn" title="تعديل" onclick="openEditEmp('${e.id}')"><i class="fa-solid fa-pen"></i></button>
+          <button class="ibtn del" title="حذف" onclick="delEmp('${e.id}')"><i class="fa-solid fa-trash"></i></button>
+        </div>
+      </div>
+    `;
+  }).join('') || '<p style="color:var(--mut)">لا يوجد موظفون مضافون.</p>';
 }
 
 $('#eAdd').onclick = async () => {
   const coId = $('#eCo').value, name = $('#eName').value.trim();
   if(!coId || !name) return alert('أدخل البيانات الأساسية للموظف');
-
   const newEmp = {
     company_id: parseInt(coId), 
     name, 
@@ -253,11 +369,8 @@ $('#eAdd').onclick = async () => {
     cv_url: $('#eCv').value.trim(),
     image_url: $('#eImage').value.trim()
   };
-
   const { error } = await supabaseClient.from('employees').insert([newEmp]);
-  if(error) return alert('خطأ أثناء إضافة الموظف: ' + error.message);
-  
-  alert('تم إضافة الموظف بنجاح!');
+  if(error) return alert('خطأ: ' + error.message);
   await loadDBFromSupabase(); renderAll();
   $('#eName').value = ''; $('#eRole').value = ''; $('#ePhone').value = ''; $('#eCv').value = ''; $('#eImage').value = '';
 };
@@ -268,14 +381,47 @@ window.delEmp = async id => {
   await loadDBFromSupabase(); renderAll();
 };
 
+window.toggleHideEmp = async (id, status) => {
+  await supabaseClient.from('employees').update({ is_hidden: status }).eq('id', id);
+  await loadDBFromSupabase(); renderAll();
+};
+
+/* --- عرض التقييمات بشكل مربعات Cards --- */
 function rRevs(){
-  $('#rTbl').innerHTML = `<tr><th>الموظف</th><th>التعليق</th><th>النجوم</th><th></th></tr>` +
-    ((DB.reviews && DB.reviews.length) ? DB.reviews.map(r=>{ const e=(DB.employees || []).find(x=>x.id === r.employee_id);
-      return `<tr><td>${e?e.name:'—'}</td>
-      <td>${r.comment_text}</td><td style="color:#f59e0b">${'★'.repeat(r.rating_stars)}</td>
-      <td class="mini">
-      <button class="ibtn del" onclick="delRev('${r.id}')"><i class="fa-solid fa-trash"></i></button></td></tr>`;}).join('')
-    : `<tr><td colspan="4" style="color:var(--mut)">لا توجد تقييمات</td></tr>`);
+  const grid = $('#rCardsGrid');
+  if(!grid) return;
+  
+  grid.innerHTML = (DB.reviews || []).map(r => {
+    const emp = (DB.employees || []).find(x => String(x.id) === String(r.employee_id || r.empId));
+    const isHidden = r.isHidden || r.is_hidden;
+    
+    return `
+      <div class="admin-card ${isHidden ? 'hidden-item' : ''}">
+        <div class="admin-card-top" style="align-items:flex-start">
+          <div class="admin-card-img" style="background:rgba(245, 158, 11, 0.1); color:#f59e0b;">
+            <i class="fa-solid fa-star"></i>
+          </div>
+          <div class="admin-card-info" style="width:100%">
+            <div style="display:flex; justify-content:space-between; align-items:center">
+              <h4>${r.name || 'عميل'}</h4>
+              <span style="color:#f59e0b">${'★'.repeat(r.stars || r.rating_stars || 5)}</span>
+            </div>
+            <span style="font-size:0.75rem; color:var(--c2)">للموظف/الخبير: ${emp ? emp.name : '—'}</span>
+            <p style="margin:8px 0; font-size:0.85rem; color:var(--txt); background:rgba(255,255,255,0.02); padding:8px; border-radius:8px;">${r.text || r.comment_text || ''}</p>
+            ${isHidden ? '<div style="color:#f59e0b;font-size:0.75rem">مخفي عن الزوار</div>' : ''}
+          </div>
+        </div>
+        <div class="admin-card-actions">
+          <button class="ibtn hide-btn" title="${isHidden ? 'إظهار' : 'إخفاء'}" onclick="toggleHideRev('${r.id}', ${!isHidden})">
+            <i class="fa-solid ${isHidden ? 'fa-eye' : 'fa-eye-slash'}"></i>
+          </button>
+          <button class="ibtn del" title="حذف" onclick="delRev('${r.id}')">
+            <i class="fa-solid fa-trash"></i>
+          </button>
+        </div>
+      </div>
+    `;
+  }).join('') || '<p style="color:var(--mut)">لا توجد تقييمات مضافة.</p>';
 }
 
 window.delRev = async id => {
@@ -284,10 +430,65 @@ window.delRev = async id => {
   await loadDBFromSupabase(); renderAll();
 };
 
+window.toggleHideRev = async (id, status) => {
+  await supabaseClient.from('reviews').update({ is_hidden: status }).eq('id', id);
+  await loadDBFromSupabase(); renderAll();
+};
+
+/* --- نافذة التعديل المنبثقة (Modal Edit) --- */
+function closeEditModal() {
+  $('#editModal').classList.remove('on');
+}
+
+window.openEditCo = id => {
+  const co = DB.companies.find(x => String(x.id) === String(id));
+  if(!co) return;
+  $('#modalTitle').textContent = 'تعديل الشركة';
+  $('#modalBody').innerHTML = `
+    <label>اسم الشركة<input id="editCoName" value="${co.name}"></label>
+    <label>رابط الشعار (Logo URL)<input id="editCoImage" value="${co.logo_url || co.image || ''}"></label>
+  `;
+  $('#saveEditBtn').onclick = async () => {
+    const name = $('#editCoName').value.trim();
+    const logo_url = $('#editCoImage').value.trim();
+    const { error } = await supabaseClient.from('companies').update({ name, logo_url }).eq('id', id);
+    if(error) return alert('خطأ: ' + error.message);
+    closeEditModal();
+    await loadDBFromSupabase(); renderAll();
+  };
+  $('#editModal').classList.add('on');
+};
+
+window.openEditEmp = id => {
+  const emp = DB.employees.find(x => String(x.id) === String(id));
+  if(!emp) return;
+  $('#modalTitle').textContent = 'تعديل الموظف / الخبير';
+  $('#modalBody').innerHTML = `
+    <label>اسم الموظف<input id="editEmpName" value="${emp.name}"></label>
+    <label>المسمى الوظيفي<input id="editEmpTitle" value="${emp.title || emp.role || ''}"></label>
+    <label>رقم الجوال (واتساب)<input id="editEmpPhone" value="${emp.phone || ''}"></label>
+    <label>رابط السيرة الذاتية (CV)<input id="editEmpCv" value="${emp.cv_url || emp.cv || ''}"></label>
+    <label>رابط الصورة الشخصية<input id="editEmpImage" value="${emp.image_url || emp.image || ''}"></label>
+  `;
+  $('#saveEditBtn').onclick = async () => {
+    const name = $('#editEmpName').value.trim();
+    const title = $('#editEmpTitle').value.trim();
+    const phone = $('#editEmpPhone').value.trim();
+    const cv_url = $('#editEmpCv').value.trim();
+    const image_url = $('#editEmpImage').value.trim();
+
+    const { error } = await supabaseClient.from('employees').update({ name, title, phone, cv_url, image_url }).eq('id', id);
+    if(error) return alert('خطأ: ' + error.message);
+    closeEditModal();
+    await loadDBFromSupabase(); renderAll();
+  };
+  $('#editModal').classList.add('on');
+};
+
 function rSet(){
-  if(DB.settings && DB.settings[0]){
-    $('#sWa').value = DB.settings[0].whatsapp || ''; 
-    $('#sMail').value = DB.settings[0].email || '';
+  if(DB.settings){
+    $('#sWa').value = DB.settings.whatsapp || ''; 
+    $('#sMail').value = DB.settings.email || '';
   }
   if(DB.admin_users && DB.admin_users[0]){
     $('#sUser').value = DB.admin_users[0].email || ''; 
@@ -301,13 +502,16 @@ $('#sSave').onclick = async () => {
   const newWa = $('#sWa').value.trim();
   const newSiteMail = $('#sMail').value.trim();
 
+  // جلب الـ ID الخاص بصف الإعدادات أو الاعتماد على تحديث أول صف مباشرة
+  const settingId = DB.settings.id || 1;
+
   await Promise.all([
     supabaseClient.from('admin_users').update({ email: newEmail, password_hash: newPass }).eq('id', 1),
-    supabaseClient.from('settings').update({ whatsapp: newWa, email: newSiteMail }).eq('id', 1)
+    supabaseClient.from('settings').update({ whatsapp: newWa, email: newSiteMail }).eq('id', settingId)
   ]);
 
   await loadDBFromSupabase();
-  alert('تم حفظ الإعدادات بنجاح ✔');
+  alert('تم حفظ الإعدادات وتحديث رقم الواتساب بنجاح ✔');
 };
 </script>
 </body>
