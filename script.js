@@ -38,16 +38,19 @@ let DB = {
   categories: [],
   companies: [],
   employees: [],
-  reviews: []
+  reviews: [],
+  admin_users: []
 };
 
 async function loadDBFromSupabase() {
   try {
-    const [cats, cos, emps, revs] = await Promise.all([
+    const [cats, cos, emps, revs, admins, settings] = await Promise.all([
       sbFetch('categories'),
       sbFetch('companies'),
       sbFetch('employees'),
-      sbFetch('reviews')
+      sbFetch('reviews'),
+      sbFetch('admin_users'),
+      sbFetch('settings')
     ]);
 
     if (cats) DB.categories = cats;
@@ -56,7 +59,8 @@ async function loadDBFromSupabase() {
       DB.companies = cos.map(c => ({
         ...c,
         catId: c.category_id,
-        image: c.logo_url || c.image_url || ''
+        image: c.logo_url || c.image_url || '',
+        isHidden: c.is_hidden || false
       }));
     }
     
@@ -66,7 +70,8 @@ async function loadDBFromSupabase() {
         companyId: e.company_id,
         role: e.title || '',
         cv: e.cv_url || '',
-        image: e.image_url || ''
+        image: e.image_url || '',
+        isHidden: e.is_hidden || false
       }));
     }
     
@@ -74,20 +79,45 @@ async function loadDBFromSupabase() {
       DB.reviews = revs.map(r => ({
         ...r,
         empId: r.employee_id,
-        name: r.name || 'عميل',
+        name: 'عميل',
         stars: r.rating_stars !== undefined ? r.rating_stars : 5,
         text: r.comment_text || '—',
         hidden: r.is_hidden !== undefined ? r.is_hidden : false
       }));
     }
 
+    if (admins) DB.admin_users = admins;
+    
+    // جلب الإعدادات ومعالجة شكل البيانات سواء كانت مصفوفة أو كائن
+    if (settings) {
+      if (Array.isArray(settings) && settings.length > 0) {
+        DB.settings = settings[0];
+      } else if (!Array.isArray(settings)) {
+        DB.settings = settings;
+      }
+    }
+
+    // تحديث روابط الواتساب في الموقع فور جلب البيانات
+    updateWhatsAppLinks();
+
   } catch (e) {
     console.error("خطأ في تحميل البيانات من Supabase:", e);
   }
 }
 
+// دالة لتحديث روابط الواتساب ديناميكياً بناءً على جدول settings
+function updateWhatsAppLinks() {
+  const activeWa = DB.settings.whatsapp || "966500000000";
+  
+  const waLink = document.getElementById('waLink');
+  const fabWa = document.getElementById('fabWa');
+  
+  if (waLink) waLink.href = `https://wa.me/${activeWa}`;
+  if (fabWa) fabWa.href = `https://wa.me/${activeWa}`;
+}
+
 // دوال مساعدة
-const empsOf = id => DB.employees.filter(e => String(e.companyId || e.company_id || '') === String(id));
+const empsOf = id => DB.employees.filter(e => String(e.companyId || e.company_id || '') === String(id) && !e.isHidden);
 const revsOf = id => DB.reviews.filter(r => String(r.empId || r.employee_id || '') === String(id) && !r.hidden);
 const avgOf = id => { const r = revsOf(id); return r.length ? (r.reduce((s, x) => s + Number(x.stars || 0), 0) / r.length) : 0; };
 const starsHTML = n => '★'.repeat(Math.round(n)) + '☆'.repeat(5 - Math.round(n));
@@ -100,20 +130,40 @@ if (document.getElementById('companiesGrid')) {
 
   async function initSite() {
     await loadDBFromSupabase();
+    renderCategories();
     renderCompanies();
     renderExperts();
+    setupSearchAndFilters();
   }
+
+  function setupSearchAndFilters() {
+    const searchInput = document.getElementById('searchInput') || document.querySelector('input[type="search"]') || document.querySelector('.search-input');
+    if (searchInput) {
+      searchInput.addEventListener('input', (e) => {
+        query = e.target.value;
+        renderCompanies();
+      });
+    }
+  }
+
+  function renderCategories() {}
 
   function matches(k) {
     if (!query) return true;
-    const q = query.trim();
-    return (k.name + (k.desc || k.description || '')).includes(q) || empsOf(k.id).some(e => (e.name + (e.role || '')).includes(q));
+    const q = query.trim().toLowerCase();
+    const nameMatch = (k.name || '').toLowerCase().includes(q);
+    const descMatch = (k.desc || k.description || '').toLowerCase().includes(q);
+    const empMatch = empsOf(k.id).some(e => ((e.name || '') + (e.role || e.title || '')).toLowerCase().includes(q));
+    return nameMatch || descMatch || empMatch;
   }
 
   function renderCompanies() {
-    const list = DB.companies.filter(k => (activeCat === 'all' || String(k.category_id || k.catId) === String(activeCat)) && matches(k));
+    const list = DB.companies.filter(k => !k.isHidden && (activeCat === 'all' || String(k.category_id || k.catId) === String(activeCat)) && matches(k));
     
-    $('#companiesGrid').innerHTML = list.length ? list.map(k => {
+    const grid = $('#companiesGrid');
+    if (!grid) return;
+
+    grid.innerHTML = list.length ? list.map(k => {
       const emps = empsOf(k.id);
       return `<article class="card company" id="co-${k.id}" style="cursor:pointer" onclick="scrollToCompanyEmployees('${k.id}')">
         <div class="company-top" style="display:flex;align-items:center;gap:12px">
@@ -128,11 +178,11 @@ if (document.getElementById('companiesGrid')) {
             ${e.image ? `<img src="${e.image}" class="avatar" style="object-fit:cover">` : `<span class="avatar">${initials(e.name)}</span>`}${e.name}</span>`).join('')
           : '<span style="color:var(--mut);font-size:.85rem">لا يوجد موظفون حالياً</span>'}</div>
         <div class="company-foot">
-          <span><i class="fa-solid fa-location-dot"></i> ${k.city || 'مصر'}</span>
+          <span><i class="fa-solid fa-location-dot"></i> ${k.city || 'السعودية'}</span>
           <span>${emps.length} موظف/خبير</span>
         </div>
       </article>`;
-    }).join('') : `<p style="color:var(--mut);text-align:center;grid-column:1/-1">لا توجد نتائج.</p>`;
+    }).join('') : `<p style="color:var(--mut);text-align:center;grid-column:1/-1">لا توجد نتائج مطابقة.</p>`;
   }
 
   window.scrollToCompanyEmployees = function(coId) {
@@ -143,7 +193,7 @@ if (document.getElementById('companiesGrid')) {
   };
 
   function renderExperts() {
-    let filteredEmps = [...DB.employees];
+    let filteredEmps = DB.employees.filter(e => !e.isHidden);
     
     if (activeCo !== 'all') {
       filteredEmps = filteredEmps.filter(e => {
@@ -170,7 +220,7 @@ if (document.getElementById('companiesGrid')) {
         <small style="text-align:center;display:block">${a ? a.toFixed(1) : 'جديد'} · ${revsOf(e.id).length} تقييم</small>
         <button class="btn btn-glow btn-sm" style="margin-top:12px;width:100%" onclick="openEmpModal('${e.id}')">عرض الملف والتقييمات</button>
       </article>`;
-    }).join('') : `<p style="color:var(--mut);text-align:center;grid-column:1/-1">لا يوجد موظفون مرتبطون بهذه الشركة حالياً.</p>`;
+    }).join('') : `<p style="color:var(--mut);text-align:center;grid-column:1/-1">لا يوجد موظفون مرتبطون حالياً.</p>`;
   }
 
   window.openEmpModal = function(id) {
@@ -211,7 +261,7 @@ if (document.getElementById('companiesGrid')) {
           ${empRevs.map(r => `
             <div class="review" style="background:rgba(255,255,255,0.05);padding:10px;border-radius:8px;margin-bottom:8px">
               <div style="display:flex;justify-content:space-between;align-items:center">
-                <b>${r.name || 'عميل'}</b>
+                <b>${r.name}</b>
                 <div class="stars" style="color:#f59e0b">${starsHTML(r.stars)}</div>
               </div>
               <p style="margin:5px 0">${r.text || '—'}</p>
@@ -227,7 +277,6 @@ if (document.getElementById('companiesGrid')) {
           ${[1, 2, 3, 4, 5].map(i => `<i class="fa-solid fa-star" data-s="${i}">★</i>`).join('')}
         </div>
         <div style="display:grid;gap:10px;margin-top:10px">
-          <input id="rName" style="padding:8px;border-radius:8px;border:1px solid var(--stroke);background:var(--card);color:var(--txt)" placeholder="اسمك الكريم">
           <textarea id="rText" rows="3" style="padding:8px;border-radius:8px;border:1px solid var(--stroke);background:var(--card);color:var(--txt)" placeholder="اكتب تعليقك وتقييمك هنا..."></textarea>
           <button class="btn btn-glow" id="rSend" style="padding:10px;border-radius:8px;background:var(--grad);color:#fff;border:none;cursor:pointer">إرسال التقييم ليظهر للجميع</button>
         </div>
@@ -250,17 +299,14 @@ if (document.getElementById('companiesGrid')) {
     if (rSendBtn) {
       rSendBtn.onclick = async () => {
         const textVal = document.getElementById('rText').value.trim();
-        const nameVal = document.getElementById('rName').value.trim();
         
         rSendBtn.disabled = true;
         rSendBtn.textContent = 'جاري الإرسال...';
         
-        // إرسال الأعمدة الأساسية المطلوبة فقط لتجنب أي أعمدة ناقصة في قاعدة البيانات
         const payload = { 
           employee_id: Number(e.id), 
           rating_stars: Number(picked), 
-          comment_text: textVal || '—', 
-          name: nameVal || 'عميل'
+          comment_text: textVal || '—'
         };
         
         const success = await sbFetch('reviews', 'POST', payload);
@@ -286,3 +332,53 @@ if (document.getElementById('companiesGrid')) {
 
   initSite();
 }
+
+/* ================= Booking & Contact Actions ================= */
+document.addEventListener('DOMContentLoaded', () => {
+  const sendWaBtn = document.getElementById('sendWa');
+  const sendMailBtn = document.getElementById('sendMail');
+  const bookForm = document.getElementById('bookForm');
+
+  const mailLink = document.getElementById('mailLink');
+  const defaultEmail = "info@yourservices.com"; 
+
+  if (mailLink) mailLink.href = `mailto:${defaultEmail}`;
+
+  if (sendWaBtn && bookForm) {
+    sendWaBtn.addEventListener('click', () => {
+      const name = bookForm.querySelector('[name="name"]').value.trim();
+      const phone = bookForm.querySelector('[name="phone"]').value.trim();
+      const service = bookForm.querySelector('[name="service"]').value;
+      const details = bookForm.querySelector('[name="details"]').value.trim();
+
+      if (!name || !phone) {
+        alert("يرجى إدخال الاسم ورقم الجوال على الأقل.");
+        return;
+      }
+
+      // سحب رقم الواتساب المحدث مباشرة من قاعدة البيانات عند الضغط
+      const currentWa = DB.settings.whatsapp || "966500000000";
+      const text = `مرحباً، أرغب في حجز خدمة:%0A- الاسم: ${name}%0A- الجوال: ${phone}%0A- الخدمة: ${service}%0A- التفاصيل: ${details || 'لا توجد تفاصيل إضافية'}`;
+      window.open(`https://wa.me/${currentWa}?text=${text}`, '_blank');
+    });
+  }
+
+  if (sendMailBtn && bookForm) {
+    sendMailBtn.addEventListener('click', () => {
+      const name = bookForm.querySelector('[name="name"]').value.trim();
+      const phone = bookForm.querySelector('[name="phone"]').value.trim();
+      const service = bookForm.querySelector('[name="service"]').value;
+      const details = bookForm.querySelector('[name="details"]').value.trim();
+
+      if (!name || !phone) {
+        alert("يرجى إدخال الاسم ورقم الجوال على الأقل.");
+        return;
+      }
+
+      const subject = encodeURIComponent(`طلب حجز جديد من: ${name}`);
+      const body = encodeURIComponent(`الاسم: ${name}\nرقم الجوال: ${phone}\nالخدمة المطلوبة: ${service}\nالتفاصيل: ${details || '—'}`);
+      
+      window.location.href = `mailto:${defaultEmail}?subject=${subject}&body=${body}`;
+    });
+  }
+});
