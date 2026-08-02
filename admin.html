@@ -7,7 +7,7 @@
 <meta name="robots" content="noindex,nofollow" />
 <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
-<link rel="icon" type="image/png" href="logo-mark.png">
+<link rel="icon" type="image/png" href="favicon.png">
 <link rel="stylesheet" href="style.css">
 <style>
   .login-wrap{min-height:100vh;display:grid;place-items:center;padding:20px}
@@ -31,7 +31,7 @@
   .fgrid label{display:grid;gap:6px;font-size:.82rem;color:var(--mut)}
   .fgrid input,.fgrid select,.fgrid textarea{background:rgba(255,255,255,.05);border:1px solid var(--stroke);
     border-radius:12px;padding:10px 12px;color:var(--txt);font:inherit;font-size:.9rem;outline:0;width:100%}
-  .fgrid option{background:#25081a}
+  .fgrid option{background:#fff}
   .adm-head{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:12px;align-items:center;padding-top:22px}
   
   /* Grid Cards System for Companies, Employees & Reviews */
@@ -97,11 +97,32 @@
   }
   .modal-overlay.on { display: grid; }
   .modal-box {
-    background: #0f172a; border: 1px solid var(--stroke); border-radius: 20px;
+    background:#fff; border: 1px solid var(--stroke); border-radius: 20px;
     padding: 24px; width: min(450px, 100%); display: grid; gap: 14px;
   }
 
   @media(max-width:520px){.panel{padding:16px}}
+</style>
+<style>
+  /* ==== Light Pink Admin Overrides ==== */
+  body{background:var(--bg)}
+  .login,.panel,.card{background:#fff}
+  .tbl th{color:var(--mut)}
+  .tbl td{color:var(--txt)}
+  .fgrid input,.fgrid select,.fgrid textarea{background:#fff8fb;border:1px solid var(--stroke);color:var(--txt)}
+  .fgrid input:focus,.fgrid select:focus,.fgrid textarea:focus{border-color:var(--c2);background:#fff}
+  .fgrid option{background:#fff;color:var(--txt)}
+  .ibtn{background:#fff8fb;color:var(--c1);border:1px solid var(--stroke)}
+  .ibtn:hover{background:var(--grad2);color:#fff;border-color:transparent}
+  .ibtn.del:hover{background:#ef4444}
+  .ibtn.hide-btn:hover{background:var(--warn);color:#fff}
+  .admin-card{background:#fff;border:1px solid var(--stroke);box-shadow:var(--sh)}
+  .admin-card:hover{border-color:var(--c3)}
+  .admin-card-img{background:rgba(255,124,192,.14);color:var(--c1)}
+  .admin-card-info h4{color:var(--txt)}
+  .modal-overlay{background:rgba(43,15,31,.35);backdrop-filter:blur(6px)}
+  .modal-box{background:#fff;box-shadow:var(--sh)}
+  .adm-head .brand-txt{color:var(--c1)}
 </style>
 </head>
 <body>
