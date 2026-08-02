@@ -388,3 +388,73 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 });
+/* ================= Mobile menu + year ================= */
+document.addEventListener('DOMContentLoaded', () => {
+  const burger = document.getElementById('burger');
+  const menu = document.getElementById('menu');
+  if (burger && menu) {
+    burger.addEventListener('click', () => {
+      burger.classList.toggle('on');
+      menu.classList.toggle('on');
+    });
+    menu.querySelectorAll('a').forEach(a => a.addEventListener('click', () => {
+      burger.classList.remove('on'); menu.classList.remove('on');
+    }));
+  }
+  const yr = document.getElementById('yr');
+  if (yr) yr.textContent = new Date().getFullYear();
+
+  // active link on scroll
+  const links = document.querySelectorAll('.menu a[href^="#"]');
+  const secs = [...links].map(l => document.querySelector(l.getAttribute('href'))).filter(Boolean);
+  if (secs.length) {
+    const io = new IntersectionObserver(es => {
+      es.forEach(e => {
+        if (e.isIntersecting) {
+          links.forEach(l => l.classList.toggle('active', l.getAttribute('href') === '#' + e.target.id));
+        }
+      });
+    }, { rootMargin: '-45% 0px -50% 0px' });
+    secs.forEach(s => io.observe(s));
+  }
+});
+
+/* ================= Extras: live stats + hide empty sections ================= */
+document.addEventListener('DOMContentLoaded', () => {
+  const statsEl = document.getElementById('stats');
+  const catsSec = document.getElementById('cats');
+  const catsGrid = document.getElementById('catsGrid');
+  if (!statsEl && !catsSec) return;
+
+  const paint = () => {
+    if (statsEl && (DB.companies.length || DB.employees.length)) {
+      const avg = DB.reviews.length
+        ? (DB.reviews.reduce((s, r) => s + Number(r.stars || 0), 0) / DB.reviews.length).toFixed(1)
+        : '5.0';
+      statsEl.innerHTML = `
+        <div class="stat"><b data-count="${DB.companies.length}">0</b><span>شركة مسجلة</span></div>
+        <div class="stat"><b data-count="${DB.employees.length}">0</b><span>موظف وخبير</span></div>
+        <div class="stat"><b data-count="${DB.reviews.length}">0</b><span>تقييم حقيقي</span></div>
+        <div class="stat"><b>${avg}</b><span>متوسط التقييم</span></div>`;
+      statsEl.querySelectorAll('[data-count]').forEach(el => {
+        const to = Number(el.dataset.count) || 0;
+        let cur = 0;
+        const step = Math.max(1, Math.round(to / 28));
+        const t = setInterval(() => {
+          cur += step;
+          if (cur >= to) { cur = to; clearInterval(t); }
+          el.textContent = cur;
+        }, 32);
+      });
+    }
+    if (catsSec && catsGrid && !catsGrid.children.length) catsSec.style.display = 'none';
+  };
+
+  let tries = 0;
+  const iv = setInterval(() => {
+    tries++;
+    if (typeof DB !== 'undefined' && (DB.companies.length || DB.employees.length || tries > 20)) {
+      clearInterval(iv); paint();
+    }
+  }, 300);
+});
