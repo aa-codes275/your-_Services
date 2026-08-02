@@ -67,7 +67,7 @@
     </div>
 
     <div class="qr-actions">
-      <a class="btn primary" id="openBtn" href="index.html"><i class="fa-solid fa-arrow-up-right-from-square"></i> فتح الموقع</a>
+      <a class="btn primary" id="openBtn" href="#"><i class="fa-solid fa-arrow-up-right-from-square"></i> فتح الموقع</a>
       <a class="btn" id="dlBtn" download="your-services-qr.png"><i class="fa-solid fa-download"></i> تحميل الكود</a>
     </div>
 
@@ -76,12 +76,16 @@
 </div>
 
 <script>
-  var siteUrl = window.location.origin + window.location.pathname.replace(/qr-code\.html?$/i, 'index.html');
+  // تعيين الرابط الثابت المباشر للموقع
+  var siteUrl = "https://aa-codes275.github.io/your-_Services/";
+  
   document.getElementById('siteUrlTxt').textContent = siteUrl;
   document.getElementById('openBtn').href = siteUrl;
+  
   var qr = 'https://api.qrserver.com/v1/create-qr-code/?size=520x520&margin=8&color=7D1F4A&bgcolor=FFFFFF&data=' + encodeURIComponent(siteUrl);
   document.getElementById('qrImg').src = qr;
   document.getElementById('dlBtn').href = qr;
+  
   document.getElementById('copyBtn').onclick = function () {
     navigator.clipboard.writeText(siteUrl).then(() => {
       this.textContent = 'تم النسخ ✓';
