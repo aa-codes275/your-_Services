@@ -478,14 +478,9 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 async function notifyVisitor() {
   try {
-    // لمنع تكرار الإشعار لنفس الشخص في نفس الجلسة
-    if (sessionStorage.getItem('notified')) return;
-    
     await sbFetch('visitors', 'POST', {
       page: window.location.pathname || 'الرئيسية'
     });
-    
-    sessionStorage.setItem('notified', 'true');
   } catch (e) {
     console.error("خطأ في تسجيل الزيارة:", e);
   }
