@@ -522,18 +522,13 @@ function rSet(){
     $('#sPass').value = adminObj.password_hash || '';
   }
 }
-
 $('#sSave').onclick = async () => {
   const newEmail = $('#sUser').value.trim();
   const newPass = $('#sPass').value.trim();
   const newWa = $('#sWa').value.trim();
   const newSiteMail = $('#sMail').value.trim();
 
-  const currentSettings = Array.isArray(DB.settings) ? DB.settings[0] : DB.settings;
-  const settingId = currentSettings?.id || 1;
-  const adminObj = Array.isArray(DB.admin_users) ? DB.admin_users[0] : DB.admin_users;
-  const adminId = adminObj?.id || 1;
-
+  // تحديث الإعدادات في Supabase مباشرة
   await Promise.all([
     supabaseClient.from('admin_users').update({ email: newEmail, password_hash: newPass }).eq('id', adminId),
     supabaseClient.from('settings').update({ whatsapp: newWa, email: newSiteMail }).eq('id', settingId)
