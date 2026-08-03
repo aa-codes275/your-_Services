@@ -42,6 +42,28 @@ let DB = {
   admin_users: []
 };
 
+// دوال مركزية موحدة لجلب الإعدادات بدقة
+function getActiveWhatsApp() {
+  let defaultWa = "966500000000";
+  if (!DB.settings) return defaultWa;
+  let s = DB.settings;
+  if (Array.isArray(s)) {
+    s = s.length > 0 ? s[0] : {};
+  }
+  let rawWa = s.whatsapp || s.phone || defaultWa;
+  return String(rawWa).replace(/^\+/, '').replace(/\D/g, '');
+}
+
+function getActiveEmail() {
+  let defaultEmail = "info@yourservices.com";
+  if (!DB.settings) return defaultEmail;
+  let s = DB.settings;
+  if (Array.isArray(s)) {
+    s = s.length > 0 ? s[0] : {};
+  }
+  return s.email || defaultEmail;
+}
+
 async function loadDBFromSupabase() {
   try {
     const [cats, cos, emps, revs, admins, settings] = await Promise.all([
@@ -88,16 +110,10 @@ async function loadDBFromSupabase() {
 
     if (admins) DB.admin_users = admins;
     
-    // جلب الإعدادات ومعالجة شكل البيانات سواء كانت مصفوفة أو كائن
     if (settings) {
-      if (Array.isArray(settings) && settings.length > 0) {
-        DB.settings = settings[0];
-      } else if (!Array.isArray(settings)) {
-        DB.settings = settings;
-      }
+      DB.settings = settings;
     }
 
-    // تحديث روابط الواتساب في الموقع فور جلب البيانات
     updateWhatsAppLinks();
 
   } catch (e) {
@@ -105,20 +121,10 @@ async function loadDBFromSupabase() {
   }
 }
 
-// دالة لتحديث روابط الواتساب ديناميكياً بناءً على جدول settings بشكل آمن
+// دالة لتحديث روابط الواتساب والإيميل ديناميكياً
 function updateWhatsAppLinks() {
-  let activeWa = "966500000000";
-  
-  if (DB.settings) {
-    if (Array.isArray(DB.settings) && DB.settings.length > 0) {
-      activeWa = DB.settings[0].whatsapp || DB.settings[0].phone || activeWa;
-    } else if (typeof DB.settings === 'object' && DB.settings !== null) {
-      activeWa = DB.settings.whatsapp || DB.settings.phone || activeWa;
-    }
-  }
-
-  // تنظيف الرقم من أي رموز زائدة ليعمل الرابط بدقة
-  activeWa = String(activeWa).replace(/\D/g, '');
+  const activeWa = getActiveWhatsApp();
+  const activeEmail = getActiveEmail();
   
   const waLink = document.getElementById('waLink');
   const fabWa = document.getElementById('fabWa');
@@ -128,11 +134,7 @@ function updateWhatsAppLinks() {
   if (waLink) waLink.href = `https://wa.me/${activeWa}`;
   if (fabWa) fabWa.href = `https://wa.me/${activeWa}`;
   if (socWa) socWa.href = `https://wa.me/${activeWa}`;
-  
-  if (socMail) {
-    const emailVal = Array.isArray(DB.settings) ? DB.settings[0]?.email : DB.settings?.email;
-    socMail.href = `mailto:${emailVal || 'info@yourservices.com'}`;
-  }
+  if (socMail) socMail.href = `mailto:${activeEmail}`;
 }
 
 // دوال مساعدة
@@ -361,12 +363,9 @@ document.addEventListener('DOMContentLoaded', () => {
   const bookForm = document.getElementById('bookForm');
 
   const mailLink = document.getElementById('mailLink');
-  const defaultEmail = "info@yourservices.com"; 
-
-  if (mailLink) mailLink.href = `mailto:${defaultEmail}`;
+  if (mailLink) mailLink.href = `mailto:${getActiveEmail()}`;
 
   if (sendWaBtn && bookForm) {
-    // إزالة الأحداث المتراكمة لضمان عدم تكرار النقر
     const newSendWaBtn = sendWaBtn.cloneNode(true);
     sendWaBtn.parentNode.replaceChild(newSendWaBtn, sendWaBtn);
 
@@ -381,17 +380,7 @@ document.addEventListener('DOMContentLoaded', () => {
         return;
       }
 
-      // سحب وتنظيف رقم الواتساب المحدث مباشرة من قاعدة البيانات
-      let currentWa = "966500000000";
-      if (DB.settings) {
-        if (Array.isArray(DB.settings) && DB.settings.length > 0) {
-          currentWa = DB.settings[0].whatsapp || DB.settings[0].phone || currentWa;
-        } else if (typeof DB.settings === 'object' && DB.settings !== null) {
-          currentWa = DB.settings.whatsapp || DB.settings.phone || currentWa;
-        }
-      }
-      currentWa = String(currentWa).replace(/\D/g, '');
-
+      const currentWa = getActiveWhatsApp();
       const text = `مرحباً، أرغب في حجز خدمة:%0A- الاسم: ${name}%0A- الجوال: ${phone}%0A- الخدمة: ${service}%0A- التفاصيل: ${details || 'لا توجد تفاصيل إضافية'}`;
       window.open(`https://wa.me/${currentWa}?text=${text}`, '_blank');
     });
@@ -409,10 +398,11 @@ document.addEventListener('DOMContentLoaded', () => {
         return;
       }
 
+      const activeEmail = getActiveEmail();
       const subject = encodeURIComponent(`طلب حجز جديد من: ${name}`);
       const body = encodeURIComponent(`الاسم: ${name}\nرقم الجوال: ${phone}\nالخدمة المطلوبة: ${service}\nالتفاصيل: ${details || '—'}`);
       
-      window.location.href = `mailto:${defaultEmail}?subject=${subject}&body=${body}`;
+      window.location.href = `mailto:${activeEmail}?subject=${subject}&body=${body}`;
     });
   }
 });
@@ -433,7 +423,6 @@ document.addEventListener('DOMContentLoaded', () => {
   const yr = document.getElementById('yr');
   if (yr) yr.textContent = new Date().getFullYear();
 
-  // active link on scroll
   const links = document.querySelectorAll('.menu a[href^="#"]');
   const secs = [...links].map(l => document.querySelector(l.getAttribute('href'))).filter(Boolean);
   if (secs.length) {
