@@ -3,9 +3,6 @@
 const SUPABASE_URL = "https://xkzizjwpiygwhookesgn.supabase.co";
 const SUPABASE_ANON_KEY = "sb_publishable_aX2cyDXfBHMA6RO3xWlRcQ_cmar6-wd";
 
-// ⚠️ ضع رقم الواتساب الصحيح الخاص بك هنا (مع رمز الدولة وبدون علامة + أو مسافات، مثال: 9665xxxxxxxx أو 201xxxxxxxx)
-const FIXED_WHATSAPP_NUMBER = "966500000000";
-
 const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 const uid = p => p + '_' + Math.random().toString(36).slice(2, 8);
 
@@ -37,7 +34,7 @@ async function sbFetch(table, method = 'GET', body = null, queryParams = '') {
 }
 
 let DB = {
-  settings: { whatsapp: FIXED_WHATSAPP_NUMBER, email: 'info@yourservices.com', admin: { user: 'admin', pass: 'admin123' } },
+  settings: { whatsapp: '966500000000', email: 'info@yourservices.com', admin: { user: 'admin', pass: 'admin123' } },
   categories: [],
   companies: [],
   employees: [],
@@ -91,6 +88,7 @@ async function loadDBFromSupabase() {
 
     if (admins) DB.admin_users = admins;
     
+    // جلب الإعدادات ومعالجة شكل البيانات سواء كانت مصفوفة أو كائن
     if (settings) {
       if (Array.isArray(settings) && settings.length > 0) {
         DB.settings = settings[0];
@@ -99,6 +97,7 @@ async function loadDBFromSupabase() {
       }
     }
 
+    // تحديث روابط الواتساب في الموقع فور جلب البيانات
     updateWhatsAppLinks();
 
   } catch (e) {
@@ -106,16 +105,29 @@ async function loadDBFromSupabase() {
   }
 }
 
-// دالة تحديث روابط الواتساب في الموقع
+// دالة لتحديث روابط الواتساب ديناميكياً بناءً على جدول settings بشكل آمن
 function updateWhatsAppLinks() {
+  let activeWa = "966500000000";
+  
+  if (DB.settings) {
+    if (Array.isArray(DB.settings) && DB.settings.length > 0) {
+      activeWa = DB.settings[0].whatsapp || DB.settings[0].phone || activeWa;
+    } else if (typeof DB.settings === 'object') {
+      activeWa = DB.settings.whatsapp || DB.settings.phone || activeWa;
+    }
+  }
+
+  // تنظيف الرقم من أي رموز زائدة ليعمل الرابط بدقة
+  activeWa = String(activeWa).replace(/\D/g, '');
+  
   const waLink = document.getElementById('waLink');
   const fabWa = document.getElementById('fabWa');
   const socWa = document.getElementById('socWa');
   const socMail = document.getElementById('socMail');
   
-  if (waLink) waLink.href = `https://wa.me/${FIXED_WHATSAPP_NUMBER}`;
-  if (fabWa) fabWa.href = `https://wa.me/${FIXED_WHATSAPP_NUMBER}`;
-  if (socWa) socWa.href = `https://wa.me/${FIXED_WHATSAPP_NUMBER}`;
+  if (waLink) waLink.href = `https://wa.me/${activeWa}`;
+  if (fabWa) fabWa.href = `https://wa.me/${activeWa}`;
+  if (socWa) socWa.href = `https://wa.me/${activeWa}`;
   
   if (socMail) {
     const emailVal = Array.isArray(DB.settings) ? DB.settings[0]?.email : DB.settings?.email;
@@ -354,6 +366,7 @@ document.addEventListener('DOMContentLoaded', () => {
   if (mailLink) mailLink.href = `mailto:${defaultEmail}`;
 
   if (sendWaBtn && bookForm) {
+    // إزالة الأحداث المتراكمة لضمان عدم تكرار النقر
     const newSendWaBtn = sendWaBtn.cloneNode(true);
     sendWaBtn.parentNode.replaceChild(newSendWaBtn, sendWaBtn);
 
@@ -368,8 +381,19 @@ document.addEventListener('DOMContentLoaded', () => {
         return;
       }
 
+      // سحب وتنظيف رقم الواتساب المحدث مباشرة من قاعدة البيانات
+      let currentWa = "966500000000";
+      if (DB.settings) {
+        if (Array.isArray(DB.settings) && DB.settings.length > 0) {
+          currentWa = DB.settings[0].whatsapp || DB.settings[0].phone || currentWa;
+        } else if (typeof DB.settings === 'object') {
+          currentWa = DB.settings.whatsapp || DB.settings.phone || currentWa;
+        }
+      }
+      currentWa = String(currentWa).replace(/\D/g, '');
+
       const text = `مرحباً، أرغب في حجز خدمة:%0A- الاسم: ${name}%0A- الجوال: ${phone}%0A- الخدمة: ${service}%0A- التفاصيل: ${details || 'لا توجد تفاصيل إضافية'}`;
-      window.open(`https://wa.me/${FIXED_WHATSAPP_NUMBER}?text=${text}`, '_blank');
+      window.open(`https://wa.me/${currentWa}?text=${text}`, '_blank');
     });
   }
 
@@ -409,6 +433,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const yr = document.getElementById('yr');
   if (yr) yr.textContent = new Date().getFullYear();
 
+  // active link on scroll
   const links = document.querySelectorAll('.menu a[href^="#"]');
   const secs = [...links].map(l => document.querySelector(l.getAttribute('href'))).filter(Boolean);
   if (secs.length) {
