@@ -112,7 +112,7 @@ function updateWhatsAppLinks() {
   if (DB.settings) {
     if (Array.isArray(DB.settings) && DB.settings.length > 0) {
       activeWa = DB.settings[0].whatsapp || DB.settings[0].phone || activeWa;
-    } else if (typeof DB.settings === 'object') {
+    } else if (typeof DB.settings === 'object' && DB.settings !== null) {
       activeWa = DB.settings.whatsapp || DB.settings.phone || activeWa;
     }
   }
@@ -386,7 +386,7 @@ document.addEventListener('DOMContentLoaded', () => {
       if (DB.settings) {
         if (Array.isArray(DB.settings) && DB.settings.length > 0) {
           currentWa = DB.settings[0].whatsapp || DB.settings[0].phone || currentWa;
-        } else if (typeof DB.settings === 'object') {
+        } else if (typeof DB.settings === 'object' && DB.settings !== null) {
           currentWa = DB.settings.whatsapp || DB.settings.phone || currentWa;
         }
       }
