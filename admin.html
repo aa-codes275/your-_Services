@@ -251,8 +251,10 @@ $('#loginForm').onsubmit = async e => {
   await loadDBFromSupabase();
   const enteredUser = $('#lu').value.trim();
   const enteredPass = $('#lp').value.trim();
-  const sysUser = DB?.admin_users?.[0]?.email || 'admin@superoffice.com';
-  const sysPass = DB?.admin_users?.[0]?.password_hash || 'admin123';
+  
+  const adminUserObj = Array.isArray(DB?.admin_users) ? DB.admin_users[0] : DB?.admin_users;
+  const sysUser = adminUserObj?.email || 'admin@superoffice.com';
+  const sysPass = adminUserObj?.password_hash || 'admin123';
 
   if(enteredUser === sysUser && enteredPass === sysPass){ 
     sessionStorage.setItem(SKEY,'1'); 
@@ -508,13 +510,16 @@ window.openEditEmp = id => {
 };
 
 function rSet(){
-  if(DB.settings){
-    $('#sWa').value = DB.settings.whatsapp || ''; 
-    $('#sMail').value = DB.settings.email || '';
+  const currentSettings = Array.isArray(DB.settings) ? DB.settings[0] : DB.settings;
+  if(currentSettings){
+    $('#sWa').value = currentSettings.whatsapp || ''; 
+    $('#sMail').value = currentSettings.email || '';
   }
-  if(DB.admin_users && DB.admin_users[0]){
-    $('#sUser').value = DB.admin_users[0].email || ''; 
-    $('#sPass').value = DB.admin_users[0].password_hash || '';
+  
+  const adminObj = Array.isArray(DB.admin_users) ? DB.admin_users[0] : DB.admin_users;
+  if(adminObj){
+    $('#sUser').value = adminObj.email || ''; 
+    $('#sPass').value = adminObj.password_hash || '';
   }
 }
 
@@ -524,11 +529,13 @@ $('#sSave').onclick = async () => {
   const newWa = $('#sWa').value.trim();
   const newSiteMail = $('#sMail').value.trim();
 
-  // جلب الـ ID الخاص بصف الإعدادات أو الاعتماد على تحديث أول صف مباشرة
-  const settingId = DB.settings.id || 1;
+  const currentSettings = Array.isArray(DB.settings) ? DB.settings[0] : DB.settings;
+  const settingId = currentSettings?.id || 1;
+  const adminObj = Array.isArray(DB.admin_users) ? DB.admin_users[0] : DB.admin_users;
+  const adminId = adminObj?.id || 1;
 
   await Promise.all([
-    supabaseClient.from('admin_users').update({ email: newEmail, password_hash: newPass }).eq('id', 1),
+    supabaseClient.from('admin_users').update({ email: newEmail, password_hash: newPass }).eq('id', adminId),
     supabaseClient.from('settings').update({ whatsapp: newWa, email: newSiteMail }).eq('id', settingId)
   ]);
 
