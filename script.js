@@ -483,8 +483,8 @@ async function notifyVisitor() {
     // منع تكرار إرسال التنبيه في نفس جلسة المتصفح
     if (sessionStorage.getItem('notified')) return;
 
-    const botToken = "8859355217:AAHlblFuy17am4NpD5AH7DTn0iw4jwEnzqU"; // التوكن الجديد
-    const chatId = "-5384771205"; // آي دي جروب Your Services
+    const botToken = "8859355217:AAHlblFuy17am4NpD5AH7DTn0iw4jwEnzqU"; // التوكن
+    const chatId = "-5455441583"; // آي دي جروب Your Services الصحيح الجديد
     const pageName = window.location.pathname || 'الرئيسية';
     const message = encodeURIComponent(`🚨 تنبيه: زائر جديد فتح موقع Your Services الآن! ✨\n📄 الصفحة: ${pageName}`);
     
