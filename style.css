@@ -1,23 +1,23 @@
 /* ============ Your Services — Logo Palette: Sky Cyan + Deep Pink ============ */
-:root{
-  --bg:#ffffff;
-  --bg2:#fff2f8;
-  --card:#ffffff;
-  --stroke:rgba(194,24,91,.14);
-  --txt:#25101d;
-  --mut:#8a6377;
-  --c1:#8e1246;   /* deep pink plum */
-  --c2:#c2185b;   /* deep pink      */
-  --c3:#ff5fae;   /* hot pink       */
-  --t1:#0b3d4d;   /* deep teal      */
-  --t2:#12b5cb;   /* sky cyan       */
-  --t3:#5fe1f0;   /* light sky      */
-  --ok:#12a97b; --warn:#e8a11a;
-  --grad:linear-gradient(120deg,var(--t3) 0%,var(--t2) 22%,var(--t1) 42%,var(--c1) 62%,var(--c2) 82%,var(--c3) 100%);
-  --grad2:linear-gradient(120deg,var(--t2),var(--c2) 60%,var(--c3));
-  --grad-sky:linear-gradient(120deg,var(--t3),var(--t2));
-  --r:20px;
-  --sh:0 18px 44px -26px rgba(142,18,70,.42);
+:root {
+  --bg: #ffffff;
+  --bg2: #f4fafd; /* خلفية سماوية فاتحة ورايقة */
+  --card: #ffffff;
+  --stroke: rgba(18,181,203,.16); /* إطارات هادئة متناسقة */
+  --txt: #0c252c;
+  --mut: #607982;
+  --c1: #0b3d4d;   /* سماوي غامق أساسي */
+  --c2: #12b5cb;   /* سماوي وسط */
+  --c3: #ff5fae;   /* لمسة وردي خفيفة للتمييز والأزرار */
+  --t1: #0b3d4d;   
+  --t2: #12b5cb;   
+  --t3: #5fe1f0;   
+  --ok: #12a97b; --warn: #e8a11a;
+  --grad: linear-gradient(120deg, var(--t3) 0%, var(--t2) 40%, var(--t1) 75%, var(--c3) 100%); /* دمج السماوي مع لمسة وردي خفيفة في التدرج */
+  --grad2: linear-gradient(120deg, var(--t2), var(--t1) 65%, var(--c3));
+  --grad-sky: linear-gradient(120deg, var(--t3), var(--t2));
+  --r: 20px;
+  --sh: 0 18px 44px -26px rgba(18,181,203,.3);
 }
 *{box-sizing:border-box;margin:0;padding:0}
 html{scroll-behavior:smooth;-webkit-text-size-adjust:100%}
