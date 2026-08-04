@@ -477,16 +477,16 @@ document.addEventListener('DOMContentLoaded', () => {
   }, 300);
 });
 
-/* ================= Telegram Visitor Notification ================= */
+/* ================= Telegram Visitor Notification (Updated) ================= */
 async function notifyVisitor() {
   try {
     // منع تكرار إرسال التنبيه في نفس جلسة المتصفح
     if (sessionStorage.getItem('notified')) return;
 
-    const botToken = "8859355217:AAGi_rDM6CNv5cOVCnYWrUSYg0DT7tXbUTE";
-    const chatId = "5238151007";
+    const botToken = "8859355217:AAHlblFuy17am4NpD5AH7DTn0iw4jwEnzqU"; // التوكن الجديد
+    const chatId = "-5384771205"; // آي دي جروب Your Services
     const pageName = window.location.pathname || 'الرئيسية';
-    const message = encodeURIComponent(`🚨 تنبيه: زائر جديد فتح الموقع الآن!\n📄 الصفحة: ${pageName}`);
+    const message = encodeURIComponent(`🚨 تنبيه: زائر جديد فتح موقع Your Services الآن! ✨\n📄 الصفحة: ${pageName}`);
     
     // إرسال الإشعار المباشر لتليجرام
     await fetch(`https://api.telegram.org/bot${botToken}/sendMessage?chat_id=${chatId}&text=${message}`);
