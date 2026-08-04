@@ -34,7 +34,7 @@ async function sbFetch(table, method = 'GET', body = null, queryParams = '') {
 }
 
 let DB = {
-  settings: { whatsapp: '966500000000', email: 'info@yourservices.com', admin: { user: 'admin', pass: 'admin123' } },
+  settings: { whatsapp: '966500000000', email: 'servicesyour028@gmail.com', admin: { user: 'admin', pass: 'admin123' } },
   categories: [],
   companies: [],
   employees: [],
@@ -55,7 +55,7 @@ function getActiveWhatsApp() {
 }
 
 function getActiveEmail() {
-  let defaultEmail = "info@yourservices.com";
+  let defaultEmail = "servicesyour028@gmail.com";
   if (!DB.settings) return defaultEmail;
   let s = DB.settings;
   if (Array.isArray(s)) {
@@ -477,18 +477,16 @@ document.addEventListener('DOMContentLoaded', () => {
   }, 300);
 });
 
-/* ================= Telegram Visitor Notification (Updated) ================= */
+/* ================= Telegram Visitor Notification ================= */
 async function notifyVisitor() {
   try {
-    // منع تكرار إرسال التنبيه في نفس جلسة المتصفح
     if (sessionStorage.getItem('notified')) return;
 
-    const botToken = "8859355217:AAHlblFuy17am4NpD5AH7DTn0iw4jwEnzqU"; // التوكن
-    const chatId = "-5455441583"; // آي دي جروب Your Services الصحيح الجديد
+    const botToken = "8859355217:AAHlblFuy17am4NpD5AH7DTn0iw4jwEnzqU";
+    const chatId = "-5455441583";
     const pageName = window.location.pathname || 'الرئيسية';
     const message = encodeURIComponent(`🚨 تنبيه: زائر جديد فتح موقع Your Services الآن! ✨\n📄 الصفحة: ${pageName}`);
     
-    // إرسال الإشعار المباشر لتليجرام
     await fetch(`https://api.telegram.org/bot${botToken}/sendMessage?chat_id=${chatId}&text=${message}`);
     
     sessionStorage.setItem('notified', 'true');
@@ -499,4 +497,59 @@ async function notifyVisitor() {
 
 document.addEventListener('DOMContentLoaded', () => {
   notifyVisitor();
+});
+
+/* ================= Welcome Popup Modal ================= */
+function showWelcomePopup() {
+  const popupHTML = `
+    <div id="welcomePopup" style="position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.7);display:flex;align-items:center;justify-content:center;z-index:9999;animation:fadeIn 0.3s ease;">
+      <div style="background:var(--card, #1e1e1e);border:1px solid var(--stroke, #333);padding:25px;border-radius:16px;text-align:center;max-width:350px;width:90%;box-shadow:0 10px 30px rgba(0,0,0,0.5);color:var(--txt, #fff);">
+        <h3 style="margin-bottom:10px;color:var(--c3, #3b82f6);">أهلاً بك في Your Services! 🌟</h3>
+        <p style="font-size:0.9rem;color:var(--mut, #aaa);margin-bottom:20px;">نحن هنا لمساعدتك في ربطك بأفضل الموظفين والمستشارين.</p>
+        <div style="display:flex;gap:10px;justify-content:center;">
+          <a id="popupWa" href="#" target="_blank" style="flex:1;padding:10px;background:#25d366;color:#fff;border-radius:8px;text-decoration:none;font-weight:bold;font-size:0.85rem;display:flex;align-items:center;justify-content:center;gap:5px;">
+            <i class="fa-brands fa-whatsapp"></i> واتساب
+          </a>
+          <a href="mailto:servicesyour028@gmail.com" style="flex:1;padding:10px;background:var(--grad, #3b82f6);color:#fff;border-radius:8px;text-decoration:none;font-weight:bold;font-size:0.85rem;display:flex;align-items:center;justify-content:center;gap:5px;">
+            <i class="fa-solid fa-envelope"></i> إيميل
+          </a>
+        </div>
+      </div>
+    </div>
+  `;
+
+  const div = document.createElement('div');
+  div.innerHTML = popupHTML;
+  document.body.appendChild(div);
+
+  const popupWa = document.getElementById('popupWa');
+  if (popupWa && typeof getActiveWhatsApp === 'function') {
+    popupWa.href = `https://wa.me/${getActiveWhatsApp()}`;
+  }
+
+  // إخفاء الرسالة تلقائياً بعد 5 ثواني
+  const timer = setTimeout(() => {
+    closeWelcomePopup();
+  }, 5000);
+
+  const popupEl = document.getElementById('welcomePopup');
+  popupEl.onclick = (e) => {
+    if (e.target.id === 'welcomePopup') {
+      clearTimeout(timer);
+      closeWelcomePopup();
+    }
+  };
+}
+
+function closeWelcomePopup() {
+  const popup = document.getElementById('welcomePopup');
+  if (popup) {
+    popup.style.opacity = '0';
+    popup.style.transition = 'opacity 0.3s ease';
+    setTimeout(() => popup.remove(), 300);
+  }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  setTimeout(showWelcomePopup, 1000);
 });
