@@ -34,7 +34,6 @@
   .fgrid option{background:#fff}
   .adm-head{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:12px;align-items:center;padding-top:22px}
   
-  /* Grid Cards System for Companies, Employees & Reviews */
   .cards-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
@@ -90,7 +89,6 @@
     justify-content: flex-end;
   }
 
-  /* Modal Styling */
   .modal-overlay {
     position: fixed; top: 0; left: 0; width: 100%; height: 100%;
     background: rgba(0,0,0,0.7); display: none; place-items: center; z-index: 1000; padding: 20px;
@@ -104,7 +102,6 @@
   @media(max-width:520px){.panel{padding:16px}}
 </style>
 <style>
-  /* ==== Light Pink Admin Overrides ==== */
   body{background:var(--bg)}
   .login,.panel,.card{background:#fff}
   .tbl th{color:var(--mut)}
@@ -170,7 +167,6 @@
     <div class="scroll"><table class="tbl" id="cTbl"></table></div>
   </section>
 
-  <!-- الشركات (مربعات) -->
   <section class="card panel" id="p-cos">
     <h3>الشركات</h3>
     <div class="fgrid">
@@ -182,7 +178,6 @@
     <div class="cards-grid" id="kCardsGrid"></div>
   </section>
 
-  <!-- الموظفون (مربعات) -->
   <section class="card panel" id="p-emps">
     <h3>الموظفون</h3>
     <div class="fgrid">
@@ -197,7 +192,6 @@
     <div class="cards-grid" id="eCardsGrid"></div>
   </section>
 
-  <!-- التقييمات والتعليقات (مربعات) -->
   <section class="card panel" id="p-revs">
     <h3>التقييمات والتعليقات</h3>
     <div class="cards-grid" id="rCardsGrid"></div>
@@ -206,7 +200,7 @@
   <section class="card panel" id="p-set">
     <h3>الإعدادات</h3>
     <div class="fgrid">
-      <label>رقم واتساب<input id="sWa" placeholder="9665xxxxxxx"></label>
+      <label>رقم واتساب<input id="sWa" placeholder="966552824188"></label>
       <label>البريد الإلكتروني العام<input id="sMail"></label>
       <label>إيميل الأدمن (تسجيل الدخول)<input id="sUser"></label>
       <label>كلمة مرور الأدمن<input id="sPass"></label>
@@ -215,14 +209,13 @@
   </section>
 </div>
 
-<!-- Modal تعديل عام -->
 <div class="modal-overlay" id="editModal">
   <div class="modal-box">
     <h3 id="modalTitle">تعديل البيانات</h3>
     <div id="modalBody" class="fgrid" style="grid-template-columns:1fr"></div>
     <div style="display:flex;gap:10px;justify-content:flex-end">
-      <button class="btn btn-ghost btn-sm" onclick="closeEditModal()">إلغاء</button>
-      <button class="btn btn-glow btn-sm" id="saveEditBtn">حفظ التغييرات</button>
+      <button class="btn btn-ghost btn-sm" type="button" onclick="closeEditModal()">إلغاء</button>
+      <button class="btn btn-glow btn-sm" type="button" id="saveEditBtn">حفظ التغييرات</button>
     </div>
   </div>
 </div>
@@ -233,75 +226,114 @@
 const $ = s => document.querySelector(s);
 const SKEY = 'ys_admin_ok';
 
+if (typeof DB !== 'undefined' && DB.settings) {
+  if (Array.isArray(DB.settings)) {
+    if (DB.settings.length > 0) DB.settings[0].whatsapp = DB.settings[0].whatsapp || '966552824188';
+  } else {
+    DB.settings.whatsapp = DB.settings.whatsapp || '966552824188';
+  }
+}
+
 async function showAdmin(){ 
-  $('#loginWrap').style.display='none'; 
-  $('#adm').classList.add('on'); 
-  await loadDBFromSupabase();
+  const wrap = $('#loginWrap');
+  if(wrap) wrap.style.display = 'none'; 
+  const adm = $('#adm');
+  if(adm) adm.classList.add('on'); 
+  if (typeof loadDBFromSupabase === 'function') {
+    await loadDBFromSupabase();
+  }
   renderAll(); 
 }
 
 if(sessionStorage.getItem(SKEY)==='1') {
   showAdmin();
 } else {
-  loadDBFromSupabase();
+  if (typeof loadDBFromSupabase === 'function') {
+    loadDBFromSupabase();
+  }
 }
 
-$('#loginForm').onsubmit = async e => {
-  e.preventDefault();
-  await loadDBFromSupabase();
-  const enteredUser = $('#lu').value.trim();
-  const enteredPass = $('#lp').value.trim();
-  
-  const adminUserObj = Array.isArray(DB?.admin_users) ? DB.admin_users[0] : DB?.admin_users;
-  const sysUser = adminUserObj?.email || 'admin@superoffice.com';
-  const sysPass = adminUserObj?.password_hash || 'admin123';
+const loginForm = $('#loginForm');
+if(loginForm) {
+  loginForm.onsubmit = async e => {
+    e.preventDefault();
+    if (typeof loadDBFromSupabase === 'function') {
+      await loadDBFromSupabase();
+    }
+    const enteredUser = $('#lu').value.trim();
+    const enteredPass = $('#lp').value.trim();
+    
+    const adminUserObj = Array.isArray(DB?.admin_users) ? DB.admin_users[0] : DB?.admin_users;
+    const sysUser = adminUserObj?.email || 'admin@superoffice.com';
+    const sysPass = adminUserObj?.password_hash || 'admin123';
 
-  if(enteredUser === sysUser && enteredPass === sysPass){ 
-    sessionStorage.setItem(SKEY,'1'); 
-    showAdmin(); 
-  } else {
-    alert('اسم المستخدم أو كلمة المرور غير صحيحة');
-  }
-};
+    if(enteredUser === sysUser && enteredPass === sysPass){ 
+      sessionStorage.setItem(SKEY, '1'); 
+      showAdmin(); 
+    } else {
+      alert('اسم المستخدم أو كلمة المرور غير صحيحة');
+    }
+  };
+}
 
-$('#logout').onclick = () => { sessionStorage.removeItem(SKEY); location.reload(); };
+const logoutBtn = $('#logout');
+if(logoutBtn) {
+  logoutBtn.onclick = () => { 
+    sessionStorage.removeItem(SKEY); 
+    location.reload(); 
+  };
+}
 
-document.querySelectorAll('.adm-nav .chip').forEach(b => b.onclick = () => {
-  document.querySelectorAll('.adm-nav .chip').forEach(x=>x.classList.remove('on'));
-  document.querySelectorAll('.panel').forEach(x=>x.classList.remove('on'));
-  b.classList.add('on'); $('#p-'+b.dataset.p).classList.add('on');
+document.querySelectorAll('.adm-nav .chip').forEach(b => {
+  b.onclick = () => {
+    document.querySelectorAll('.adm-nav .chip').forEach(x => x.classList.remove('on'));
+    document.querySelectorAll('.panel').forEach(x => x.classList.remove('on'));
+    b.classList.add('on'); 
+    const panel = $('#p-' + b.dataset.p);
+    if(panel) panel.classList.add('on');
+  };
 });
 
-async function renderAll(){ rCats(); rCos(); rEmps(); rRevs(); rSet(); fillSelects(); }
+function renderAll(){ rCats(); rCos(); rEmps(); rRevs(); rSet(); fillSelects(); }
 
 function fillSelects(){
-  if(DB.categories) $('#kCat').innerHTML = DB.categories.map(c=>`<option value="${c.id}">${c.name}</option>`).join('');
-  if(DB.companies) $('#eCo').innerHTML  = DB.companies.map(k=>`<option value="${k.id}">${k.name}</option>`).join('');
+  const kCat = $('#kCat');
+  const eCo = $('#eCo');
+  if(kCat && DB.categories) kCat.innerHTML = DB.categories.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
+  if(eCo && DB.companies) eCo.innerHTML = DB.companies.map(k => `<option value="${k.id}">${k.name}</option>`).join('');
 }
 
 function rCats(){
-  $('#cTbl').innerHTML = `<tr><th>التصنيف</th><th>الشركات</th><th></th></tr>` +
-    (DB.categories || []).map(c=>`<tr><td>${c.name}</td>
-      <td>${(DB.companies || []).filter(k=>String(k.category_id || k.catId) === String(c.id)).length}</td>
+  const cTbl = $('#cTbl');
+  if(!cTbl) return;
+  cTbl.innerHTML = `<tr><th>التصنيف</th><th>الشركات</th><th></th></tr>` +
+    (DB.categories || []).map(c => `<tr><td>${c.name}</td>
+      <td>${(DB.companies || []).filter(k => String(k.category_id || k.catId) === String(c.id)).length}</td>
       <td class="mini">
-      <button class="ibtn del" onclick="delCat('${c.id}')"><i class="fa-solid fa-trash"></i></button></td></tr>`).join('');
+      <button class="ibtn del" type="button" onclick="delCat('${c.id}')"><i class="fa-solid fa-trash"></i></button></td></tr>`).join('');
 }
 
-$('#cAdd').onclick = async () => {
-  const name = $('#cName').value.trim(); if(!name) return alert('أدخل اسم التصنيف');
-  const { error } = await supabaseClient.from('categories').insert([{ name }]);
-  if(error) return alert('خطأ: ' + error.message);
-  await loadDBFromSupabase(); renderAll();
-  $('#cName').value = '';
-};
+const cAddBtn = $('#cAdd');
+if(cAddBtn) {
+  cAddBtn.onclick = async () => {
+    const nameInput = $('#cName');
+    const name = nameInput ? nameInput.value.trim() : '';
+    if(!name) return alert('أدخل اسم التصنيف');
+    const { error } = await supabaseClient.from('categories').insert([{ name }]);
+    if(error) return alert('خطأ: ' + error.message);
+    if (typeof loadDBFromSupabase === 'function') await loadDBFromSupabase(); 
+    renderAll();
+    if(nameInput) nameInput.value = '';
+  };
+}
 
 window.delCat = async id => { 
   if(!confirm('حذف التصنيف؟')) return;
   await supabaseClient.from('categories').delete().eq('id', id);
-  await loadDBFromSupabase(); renderAll(); 
+  if (typeof loadDBFromSupabase === 'function') await loadDBFromSupabase(); 
+  renderAll(); 
 };
 
-/* --- عرض الشركات بشكل مربعات Cards --- */
 function rCos(){
   const grid = $('#kCardsGrid');
   if(!grid) return;
@@ -320,40 +352,50 @@ function rCos(){
           </div>
         </div>
         <div class="admin-card-actions">
-          <button class="ibtn hide-btn" title="${isHidden ? 'إظهار' : 'إخفاء'}" onclick="toggleHideCo('${k.id}', ${!isHidden})"><i class="fa-solid ${isHidden ? 'fa-eye' : 'fa-eye-slash'}"></i></button>
-          <button class="ibtn" title="تعديل" onclick="openEditCo('${k.id}')"><i class="fa-solid fa-pen"></i></button>
-          <button class="ibtn del" title="حذف" onclick="delCo('${k.id}')"><i class="fa-solid fa-trash"></i></button>
+          <button class="ibtn hide-btn" type="button" title="${isHidden ? 'إظهار' : 'إخفاء'}" onclick="toggleHideCo('${k.id}', ${!isHidden})"><i class="fa-solid ${isHidden ? 'fa-eye' : 'fa-eye-slash'}"></i></button>
+          <button class="ibtn" type="button" title="تعديل" onclick="openEditCo('${k.id}')"><i class="fa-solid fa-pen"></i></button>
+          <button class="ibtn del" type="button" title="حذف" onclick="delCo('${k.id}')"><i class="fa-solid fa-trash"></i></button>
         </div>
       </div>
     `;
   }).join('') || '<p style="color:var(--mut)">لا توجد شركات مضافة.</p>';
 }
 
-$('#kAdd').onclick = async () => {
-  const name = $('#kName').value.trim(); if(!name) return alert('أدخل اسم الشركة');
-  const newCo = {
-    name, 
-    category_id: parseInt($('#kCat').value), 
-    logo_url: $('#kImage').value.trim()
+const kAddBtn = $('#kAdd');
+if(kAddBtn) {
+  kAddBtn.onclick = async () => {
+    const kName = $('#kName');
+    const kCat = $('#kCat');
+    const kImage = $('#kImage');
+    const name = kName ? kName.value.trim() : '';
+    if(!name) return alert('أدخل اسم الشركة');
+    const newCo = {
+      name, 
+      category_id: kCat ? parseInt(kCat.value) : null, 
+      logo_url: kImage ? kImage.value.trim() : ''
+    };
+    const { error } = await supabaseClient.from('companies').insert([newCo]);
+    if(error) return alert('خطأ: ' + error.message);
+    if (typeof loadDBFromSupabase === 'function') await loadDBFromSupabase(); 
+    renderAll();
+    if(kName) kName.value = ''; 
+    if(kImage) kImage.value = '';
   };
-  const { error } = await supabaseClient.from('companies').insert([newCo]);
-  if(error) return alert('خطأ: ' + error.message);
-  await loadDBFromSupabase(); renderAll();
-  $('#kName').value = ''; $('#kImage').value = '';
-};
+}
 
 window.delCo = async id => {
   if(!confirm('حذف الشركة؟')) return;
   await supabaseClient.from('companies').delete().eq('id', id);
-  await loadDBFromSupabase(); renderAll();
+  if (typeof loadDBFromSupabase === 'function') await loadDBFromSupabase(); 
+  renderAll();
 };
 
 window.toggleHideCo = async (id, status) => {
   await supabaseClient.from('companies').update({ is_hidden: status }).eq('id', id);
-  await loadDBFromSupabase(); renderAll();
+  if (typeof loadDBFromSupabase === 'function') await loadDBFromSupabase(); 
+  renderAll();
 };
 
-/* --- عرض الموظفين بشكل مربعات Cards --- */
 function rEmps(){
   const grid = $('#eCardsGrid');
   if(!grid) return;
@@ -373,44 +415,56 @@ function rEmps(){
           </div>
         </div>
         <div class="admin-card-actions">
-          <button class="ibtn hide-btn" title="${isHidden ? 'إظهار' : 'إخفاء'}" onclick="toggleHideEmp('${e.id}', ${!isHidden})"><i class="fa-solid ${isHidden ? 'fa-eye' : 'fa-eye-slash'}"></i></button>
-          <button class="ibtn" title="تعديل" onclick="openEditEmp('${e.id}')"><i class="fa-solid fa-pen"></i></button>
-          <button class="ibtn del" title="حذف" onclick="delEmp('${e.id}')"><i class="fa-solid fa-trash"></i></button>
+          <button class="ibtn hide-btn" type="button" title="${isHidden ? 'إظهار' : 'إخفاء'}" onclick="toggleHideEmp('${e.id}', ${!isHidden})"><i class="fa-solid ${isHidden ? 'fa-eye' : 'fa-eye-slash'}"></i></button>
+          <button class="ibtn" type="button" title="تعديل" onclick="openEditEmp('${e.id}')"><i class="fa-solid fa-pen"></i></button>
+          <button class="ibtn del" type="button" title="حذف" onclick="delEmp('${e.id}')"><i class="fa-solid fa-trash"></i></button>
         </div>
       </div>
     `;
   }).join('') || '<p style="color:var(--mut)">لا يوجد موظفون مضافون.</p>';
 }
 
-$('#eAdd').onclick = async () => {
-  const coId = $('#eCo').value, name = $('#eName').value.trim();
-  if(!coId || !name) return alert('أدخل البيانات الأساسية للموظف');
-  const newEmp = {
-    company_id: parseInt(coId), 
-    name, 
-    title: $('#eRole').value.trim(), 
-    phone: $('#ePhone').value.trim(), 
-    cv_url: $('#eCv').value.trim(),
-    image_url: $('#eImage').value.trim()
+const eAddBtn = $('#eAdd');
+if(eAddBtn) {
+  eAddBtn.onclick = async () => {
+    const eCo = $('#eCo');
+    const eName = $('#eName');
+    const coId = eCo ? eCo.value : '';
+    const name = eName ? eName.value.trim() : '';
+    if(!coId || !name) return alert('أدخل البيانات الأساسية للموظف');
+    const newEmp = {
+      company_id: parseInt(coId), 
+      name, 
+      title: $('#eRole') ? $('#eRole').value.trim() : '', 
+      phone: $('#ePhone') ? $('#ePhone').value.trim() : '', 
+      cv_url: $('#eCv') ? $('#eCv').value.trim() : '',
+      image_url: $('#eImage') ? $('#eImage').value.trim() : ''
+    };
+    const { error } = await supabaseClient.from('employees').insert([newEmp]);
+    if(error) return alert('خطأ: ' + error.message);
+    if (typeof loadDBFromSupabase === 'function') await loadDBFromSupabase(); 
+    renderAll();
+    if($('#eName')) $('#eName').value = ''; 
+    if($('#eRole')) $('#eRole').value = ''; 
+    if($('#ePhone')) $('#ePhone').value = ''; 
+    if($('#eCv')) $('#eCv').value = ''; 
+    if($('#eImage')) $('#eImage').value = '';
   };
-  const { error } = await supabaseClient.from('employees').insert([newEmp]);
-  if(error) return alert('خطأ: ' + error.message);
-  await loadDBFromSupabase(); renderAll();
-  $('#eName').value = ''; $('#eRole').value = ''; $('#ePhone').value = ''; $('#eCv').value = ''; $('#eImage').value = '';
-};
+}
 
 window.delEmp = async id => {
   if(!confirm('حذف الموظف؟')) return;
   await supabaseClient.from('employees').delete().eq('id', id);
-  await loadDBFromSupabase(); renderAll();
+  if (typeof loadDBFromSupabase === 'function') await loadDBFromSupabase(); 
+  renderAll();
 };
 
 window.toggleHideEmp = async (id, status) => {
   await supabaseClient.from('employees').update({ is_hidden: status }).eq('id', id);
-  await loadDBFromSupabase(); renderAll();
+  if (typeof loadDBFromSupabase === 'function') await loadDBFromSupabase(); 
+  renderAll();
 };
 
-/* --- عرض التقييمات بشكل مربعات Cards --- */
 function rRevs(){
   const grid = $('#rCardsGrid');
   if(!grid) return;
@@ -436,10 +490,10 @@ function rRevs(){
           </div>
         </div>
         <div class="admin-card-actions">
-          <button class="ibtn hide-btn" title="${isHidden ? 'إظهار' : 'إخفاء'}" onclick="toggleHideRev('${r.id}', ${!isHidden})">
+          <button class="ibtn hide-btn" type="button" title="${isHidden ? 'إظهار' : 'إخفاء'}" onclick="toggleHideRev('${r.id}', ${!isHidden})">
             <i class="fa-solid ${isHidden ? 'fa-eye' : 'fa-eye-slash'}"></i>
           </button>
-          <button class="ibtn del" title="حذف" onclick="delRev('${r.id}')">
+          <button class="ibtn del" type="button" title="حذف" onclick="delRev('${r.id}')">
             <i class="fa-solid fa-trash"></i>
           </button>
         </div>
@@ -451,17 +505,19 @@ function rRevs(){
 window.delRev = async id => {
   if(!confirm('حذف التقييم؟')) return;
   await supabaseClient.from('reviews').delete().eq('id', id);
-  await loadDBFromSupabase(); renderAll();
+  if (typeof loadDBFromSupabase === 'function') await loadDBFromSupabase(); 
+  renderAll();
 };
 
 window.toggleHideRev = async (id, status) => {
   await supabaseClient.from('reviews').update({ is_hidden: status }).eq('id', id);
-  await loadDBFromSupabase(); renderAll();
+  if (typeof loadDBFromSupabase === 'function') await loadDBFromSupabase(); 
+  renderAll();
 };
 
-/* --- نافذة التعديل المنبثقة (Modal Edit) --- */
 function closeEditModal() {
-  $('#editModal').classList.remove('on');
+  const modal = $('#editModal');
+  if(modal) modal.classList.remove('on');
 }
 
 window.openEditCo = id => {
@@ -478,7 +534,8 @@ window.openEditCo = id => {
     const { error } = await supabaseClient.from('companies').update({ name, logo_url }).eq('id', id);
     if(error) return alert('خطأ: ' + error.message);
     closeEditModal();
-    await loadDBFromSupabase(); renderAll();
+    if (typeof loadDBFromSupabase === 'function') await loadDBFromSupabase(); 
+    renderAll();
   };
   $('#editModal').classList.add('on');
 };
@@ -504,7 +561,8 @@ window.openEditEmp = id => {
     const { error } = await supabaseClient.from('employees').update({ name, title, phone, cv_url, image_url }).eq('id', id);
     if(error) return alert('خطأ: ' + error.message);
     closeEditModal();
-    await loadDBFromSupabase(); renderAll();
+    if (typeof loadDBFromSupabase === 'function') await loadDBFromSupabase(); 
+    renderAll();
   };
   $('#editModal').classList.add('on');
 };
@@ -512,31 +570,43 @@ window.openEditEmp = id => {
 function rSet(){
   const currentSettings = Array.isArray(DB.settings) ? DB.settings[0] : DB.settings;
   if(currentSettings){
-    $('#sWa').value = currentSettings.whatsapp || ''; 
-    $('#sMail').value = currentSettings.email || '';
+    if($('#sWa')) $('#sWa').value = currentSettings.whatsapp || '0552824188'; 
+    if($('#sMail')) $('#sMail').value = currentSettings.email || '';
+  } else {
+    if($('#sWa')) $('#sWa').value = '0552824188';
   }
   
   const adminObj = Array.isArray(DB.admin_users) ? DB.admin_users[0] : DB.admin_users;
   if(adminObj){
-    $('#sUser').value = adminObj.email || ''; 
-    $('#sPass').value = adminObj.password_hash || '';
+    if($('#sUser')) $('#sUser').value = adminObj.email || ''; 
+    if($('#sPass')) $('#sPass').value = adminObj.password_hash || '';
   }
 }
-$('#sSave').onclick = async () => {
-  const newEmail = $('#sUser').value.trim();
-  const newPass = $('#sPass').value.trim();
-  const newWa = $('#sWa').value.trim();
-  const newSiteMail = $('#sMail').value.trim();
 
-  // تحديث الإعدادات في Supabase مباشرة
-  await Promise.all([
-    supabaseClient.from('admin_users').update({ email: newEmail, password_hash: newPass }).eq('id', adminId),
-    supabaseClient.from('settings').update({ whatsapp: newWa, email: newSiteMail }).eq('id', settingId)
-  ]);
+const sSaveBtn = $('#sSave');
+if(sSaveBtn) {
+  sSaveBtn.onclick = async () => {
+    const newEmail = $('#sUser') ? $('#sUser').value.trim() : '';
+    const newPass = $('#sPass') ? $('#sPass').value.trim() : '';
+    const newWa = $('#sWa') ? $('#sWa').value.trim() : '';
+    const newSiteMail = $('#sMail') ? $('#sMail').value.trim() : '';
 
-  await loadDBFromSupabase();
-  alert('تم حفظ الإعدادات وتحديث رقم الواتساب بنجاح ✔');
-};
+    const currentSettings = Array.isArray(DB.settings) ? DB.settings[0] : DB.settings;
+    const currentAdmin = Array.isArray(DB.admin_users) ? DB.admin_users[0] : DB.admin_users;
+    
+    const settingId = currentSettings?.id || 1;
+    const adminId = currentAdmin?.id || 1;
+
+    await Promise.all([
+      supabaseClient.from('admin_users').update({ email: newEmail, password_hash: newPass }).eq('id', adminId),
+      supabaseClient.from('settings').update({ whatsapp: newWa, email: newSiteMail }).eq('id', settingId)
+    ]);
+
+    if (typeof loadDBFromSupabase === 'function') await loadDBFromSupabase();
+    if (typeof updateWhatsAppLinks === 'function') updateWhatsAppLinks();
+    alert('تم حفظ الإعدادات وتحديث رقم الواتساب بنجاح ✔');
+  };
+}
 </script>
 </body>
 </html>
