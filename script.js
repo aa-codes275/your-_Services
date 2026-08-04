@@ -34,7 +34,7 @@ async function sbFetch(table, method = 'GET', body = null, queryParams = '') {
 }
 
 let DB = {
-  settings: { whatsapp: '966500000000', email: 'servicesyour028@gmail.com', admin: { user: 'admin', pass: 'admin123' } },
+  settings: { whatsapp: '966552824188', email: 'servicesyour028@gmail.com', admin: { user: 'admin', pass: 'admin123' } },
   categories: [],
   companies: [],
   employees: [],
@@ -44,7 +44,7 @@ let DB = {
 
 // دوال مركزية موحدة لجلب الإعدادات بدقة
 function getActiveWhatsApp() {
-  let defaultWa = "966500000000";
+  let defaultWa = "966552824188";
   if (!DB.settings) return defaultWa;
   let s = DB.settings;
   if (Array.isArray(s)) {
@@ -241,7 +241,7 @@ if (document.getElementById('companiesGrid')) {
           <div class="stars">${starsHTML(a)}</div>
           <small>${a ? a.toFixed(1) : 'جديد'} · ${revsOf(e.id).length} تقييم</small>
         </div>
-        <button class="btn btn-glow btn-sm" onclick="openEmpModal('${e.id}')">عرض الملف والتقييمات</button>
+        <button class="btn btn-glow btn-sm" type="button" onclick="openEmpModal('${e.id}')">عرض الملف والتقييمات</button>
       </article>`;
     }).join('') : `<p style="color:var(--mut);text-align:center;grid-column:1/-1">لا يوجد موظفون مرتبطون حالياً.</p>`;
   }
@@ -268,7 +268,7 @@ if (document.getElementById('companiesGrid')) {
             <div style="color:var(--mut);font-size:.8rem">${co ? co.name : ''}</div>
           </div>
         </div>
-        <button class="x" id="closeModal" style="background:none;border:none;color:var(--txt);font-size:1.2rem;cursor:pointer">✕</button>
+        <button class="x" id="closeModal" type="button" style="background:none;border:none;color:var(--txt);font-size:1.2rem;cursor:pointer">✕</button>
       </div>
       
       <div class="mblock" style="margin-top:15px">
@@ -301,7 +301,7 @@ if (document.getElementById('companiesGrid')) {
         </div>
         <div style="display:grid;gap:10px;margin-top:10px">
           <textarea id="rText" rows="3" style="padding:8px;border-radius:8px;border:1px solid var(--stroke);background:var(--card);color:var(--txt)" placeholder="اكتب تعليقك وتقييمك هنا..."></textarea>
-          <button class="btn btn-glow" id="rSend" style="padding:10px;border-radius:8px;background:var(--grad);color:#fff;border:none;cursor:pointer">إرسال التقييم ليظهر للجميع</button>
+          <button class="btn btn-glow" id="rSend" type="button" style="padding:10px;border-radius:8px;background:var(--grad);color:#fff;border:none;cursor:pointer">إرسال التقييم ليظهر للجميع</button>
         </div>
       </div>`;
       
@@ -527,18 +527,19 @@ function showWelcomePopup() {
     popupWa.href = `https://wa.me/${getActiveWhatsApp()}`;
   }
 
-  // إخفاء الرسالة تلقائياً بعد 5 ثواني
   const timer = setTimeout(() => {
     closeWelcomePopup();
   }, 5000);
 
   const popupEl = document.getElementById('welcomePopup');
-  popupEl.onclick = (e) => {
-    if (e.target.id === 'welcomePopup') {
-      clearTimeout(timer);
-      closeWelcomePopup();
-    }
-  };
+  if(popupEl) {
+    popupEl.onclick = (e) => {
+      if (e.target.id === 'welcomePopup') {
+        clearTimeout(timer);
+        closeWelcomePopup();
+      }
+    };
+  }
 }
 
 function closeWelcomePopup() {
