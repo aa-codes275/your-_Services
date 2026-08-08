@@ -82,7 +82,13 @@ async function loadDBFromSupabase() {
         ...c,
         catId: c.category_id,
         image: c.logo_url || c.image_url || '',
-        isHidden: c.is_hidden || false
+        isHidden: c.is_hidden || false,
+        // بيانات المدير الشاملة المفصولة
+        managerName: c.manager_name || '',
+        managerTitle: c.manager_title || 'المدير التنفيذي',
+        managerPhone: c.manager_phone || '',
+        managerImage: c.manager_image || '',
+        managerCv: c.manager_cv || ''
       }));
     }
     
@@ -109,10 +115,7 @@ async function loadDBFromSupabase() {
     }
 
     if (admins) DB.admin_users = admins;
-    
-    if (settings) {
-      DB.settings = settings;
-    }
+    if (settings) DB.settings = settings;
 
     updateWhatsAppLinks();
 
@@ -175,7 +178,8 @@ if (document.getElementById('companiesGrid')) {
     const nameMatch = (k.name || '').toLowerCase().includes(q);
     const descMatch = (k.desc || k.description || '').toLowerCase().includes(q);
     const empMatch = empsOf(k.id).some(e => ((e.name || '') + (e.role || e.title || '')).toLowerCase().includes(q));
-    return nameMatch || descMatch || empMatch;
+    const managerMatch = (k.managerName || '').toLowerCase().includes(q);
+    return nameMatch || descMatch || empMatch || managerMatch;
   }
 
   function renderCompanies() {
@@ -194,6 +198,46 @@ if (document.getElementById('companiesGrid')) {
           </div>
         </div>
         <p style="margin-top:10px">${k.desc || k.description || ''}</p>
+        
+        <!-- قسم المدير التنفيذي بالتنسيق المطلوب -->
+        ${k.managerName ? `
+        <div class="company-manager" style="margin: 12px 0; padding: 12px; background: rgba(255,255,255,0.03); border-radius: 12px; border: 1px solid var(--stroke);" onclick="event.stopPropagation()">
+          
+          <!-- الصف الأول: صورة المدير، الاسم، أيقونة الواتساب -->
+          <div style="display:flex; align-items:center; justify-content:space-between; gap:10px;">
+            <div style="display:flex; align-items:center; gap:10px;">
+              ${k.managerImage 
+                ? `<img src="${k.managerImage}" alt="${k.managerName}" style="width:45px;height:45px;border-radius:50%;object-fit:cover;border:2px solid var(--c3);">` 
+                : `<div class="avatar" style="width:45px;height:45px;border-radius:50%;background:var(--grad);display:flex;align-items:center;justify-content:center;font-size:0.85rem;color:#fff">${initials(k.managerName || 'مدير')}</div>`
+              }
+              <div>
+                <div style="font-size:0.95rem; font-weight:bold; color:var(--txt);">${k.managerName}</div>
+              </div>
+            </div>
+            ${k.managerPhone ? `<a href="https://wa.me/${k.managerPhone.replace(/^\+/, '').replace(/\D/g, '')}" target="_blank" style="color:#25d366;font-size:1.4rem;" title="تواصل مع المدير التنفيذي"><i class="fa-brands fa-whatsapp"></i></a>` : ''}
+          </div>
+
+          <!-- الصف الثاني: المسمى الوظيفي -->
+          <div style="font-size:0.8rem; color:var(--mut); margin-top:6px;">${k.managerTitle || 'المدير التنفيذي'}</div>
+
+          <!-- الصف الثالث: روابط السيرة الذاتية أو الصورة الشخصية منفصلة تماماً -->
+          ${(k.managerCv || k.managerImage) ? `
+            <div style="border-top:1px solid var(--stroke); padding-top:8px; margin-top:8px; display:flex; gap:12px; flex-wrap:wrap;">
+              ${k.managerCv ? `
+                <a href="${k.managerCv}" target="_blank" style="font-size:0.8rem; color:var(--c3); text-decoration:underline; display:inline-flex; align-items:center; gap:5px;">
+                  <i class="fa-solid fa-file-lines"></i> السيرة الذاتية (CV)
+                </a>
+              ` : ''}
+              ${k.managerImage ? `
+                <a href="${k.managerImage}" target="_blank" style="font-size:0.8rem; color:var(--c2); text-decoration:underline; display:inline-flex; align-items:center; gap:5px;">
+                  <i class="fa-solid fa-image"></i>  
+                </a>
+              ` : ''}
+            </div>
+          ` : ''}
+
+        </div>` : ''}
+
         <div class="emp-row" style="margin-top:12px">${
           emps.length ? emps.map(e => `<span class="emp-mini" data-emp="${e.id}">
             ${e.image ? `<img src="${e.image}" class="avatar" style="object-fit:cover">` : `<span class="avatar">${initials(e.name)}</span>`}${e.name}</span>`).join('')
@@ -273,7 +317,7 @@ if (document.getElementById('companiesGrid')) {
       
       <div class="mblock" style="margin-top:15px">
         <h4>السيرة الذاتية والخبرات</h4>
-        <p>${e.cv_url || e.cv ? `<a href="${e.cv_url || e.cv}" target="_blank" style="color:var(--c3)">عرض الرابط / السيرة الذاتية</a>` : 'لا توجد تفاصيل إضافية.'}</p>
+        <p>${e.cv_url || e.cv ? `<a href="${e.cv_url || e.cv}" target="_blank" style="color:var(--c3)">عرض السيرة الذاتية (CV)</a>` : 'لا توجد تفاصيل إضافية.'}</p>
         ${e.phone ? `<p style="margin-top:5px;font-size:.85rem;color:var(--mut)">الهاتف: ${e.phone}</p>` : ''}
       </div>
 
