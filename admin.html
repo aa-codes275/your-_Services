@@ -96,7 +96,7 @@
   .modal-overlay.on { display: grid; }
   .modal-box {
     background:#fff; border: 1px solid var(--stroke); border-radius: 20px;
-    padding: 24px; width: min(450px, 100%); display: grid; gap: 14px;
+    padding: 24px; width: min(480px, 100%); display: grid; gap: 14px; max-height: 90vh; overflow-y: auto;
   }
 
   @media(max-width:520px){.panel{padding:16px}}
@@ -168,11 +168,17 @@
   </section>
 
   <section class="card panel" id="p-cos">
-    <h3>الشركات</h3>
+    <h3>الشركات ومديروها</h3>
     <div class="fgrid">
       <label>اسم الشركة<input id="kName"></label>
       <label>التصنيف<select id="kCat"></select></label>
       <label>رابط شعار الشركة (Logo URL)<input id="kImage" placeholder="https://example.com/logo.jpg"></label>
+      <label>اسم مدير الشركة<input id="kManagerName" placeholder="مثال: م. أحمد"></label>
+      <label>المسمى الوظيفي للمدير<input id="kManagerTitle" placeholder="مثال: المدير التنفيذي"></label>
+      <label>رقم واتساب المدير<input id="kManagerPhone" placeholder="9665xxxxxxxx"></label>
+      <!-- تم الفصل هنا لتصبح الخانات منفصلة تماماً -->
+      <label>رابط صورة المدير الشخصية<input id="kManagerImage" placeholder="https://example.com/photo.jpg"></label>
+      <label>رابط السيرة الذاتية (CV)<input id="kManagerCv" placeholder="رابط الـ CV أو ملف الـ PDF"></label>
     </div>
     <button class="btn btn-glow btn-sm" id="kAdd"><i class="fa-solid fa-plus"></i> إضافة شركة</button>
     <div class="cards-grid" id="kCardsGrid"></div>
@@ -341,6 +347,9 @@ function rCos(){
     const c = (DB.categories || []).find(x => String(x.id) === String(k.category_id || k.catId));
     const isHidden = k.isHidden || k.is_hidden;
     const logoUrl = k.logo_url || k.image;
+    const mgrName = k.manager_name || k.managerName;
+    const mgrTitle = k.manager_title || k.managerTitle;
+    
     return `
       <div class="admin-card ${isHidden ? 'hidden-item' : ''}">
         <div class="admin-card-top">
@@ -348,6 +357,7 @@ function rCos(){
           <div class="admin-card-info">
             <h4>${k.name}</h4>
             <span>التصنيف: ${c ? c.name : '—'}</span>
+            ${mgrName ? `<div style="font-size:0.75rem;color:var(--c3);margin-top:2px">المدير: ${mgrName} (${mgrTitle || 'مدير تنفيذي'})</div>` : ''}
             ${isHidden ? '<div style="color:var(--warn);font-size:0.75rem">مخفي عن الزوار</div>' : ''}
           </div>
         </div>
@@ -367,19 +377,38 @@ if(kAddBtn) {
     const kName = $('#kName');
     const kCat = $('#kCat');
     const kImage = $('#kImage');
+    const kManagerName = $('#kManagerName');
+    const kManagerTitle = $('#kManagerTitle');
+    const kManagerPhone = $('#kManagerPhone');
+    const kManagerImage = $('#kManagerImage');
+    const kManagerCv = $('#kManagerCv');
+
     const name = kName ? kName.value.trim() : '';
     if(!name) return alert('أدخل اسم الشركة');
+    
     const newCo = {
       name, 
       category_id: kCat ? parseInt(kCat.value) : null, 
-      logo_url: kImage ? kImage.value.trim() : ''
+      logo_url: kImage ? kImage.value.trim() : '',
+      manager_name: kManagerName ? kManagerName.value.trim() : '',
+      manager_title: kManagerTitle ? kManagerTitle.value.trim() : '',
+      manager_phone: kManagerPhone ? kManagerPhone.value.trim() : '',
+      manager_image: kManagerImage ? kManagerImage.value.trim() : '',
+      manager_cv: kManagerCv ? kManagerCv.value.trim() : ''
     };
+
     const { error } = await supabaseClient.from('companies').insert([newCo]);
     if(error) return alert('خطأ: ' + error.message);
     if (typeof loadDBFromSupabase === 'function') await loadDBFromSupabase(); 
     renderAll();
+    
     if(kName) kName.value = ''; 
     if(kImage) kImage.value = '';
+    if(kManagerName) kManagerName.value = '';
+    if(kManagerTitle) kManagerTitle.value = '';
+    if(kManagerPhone) kManagerPhone.value = '';
+    if(kManagerImage) kManagerImage.value = '';
+    if(kManagerCv) kManagerCv.value = '';
   };
 }
 
@@ -523,15 +552,36 @@ function closeEditModal() {
 window.openEditCo = id => {
   const co = DB.companies.find(x => String(x.id) === String(id));
   if(!co) return;
-  $('#modalTitle').textContent = 'تعديل الشركة';
+  $('#modalTitle').textContent = 'تعديل الشركة ومديرها التنفيذي';
   $('#modalBody').innerHTML = `
-    <label>اسم الشركة<input id="editCoName" value="${co.name}"></label>
+    <label>اسم الشركة<input id="editCoName" value="${co.name || ''}"></label>
     <label>رابط الشعار (Logo URL)<input id="editCoImage" value="${co.logo_url || co.image || ''}"></label>
+    <hr style="border:0;border-top:1px solid var(--stroke);margin:5px 0">
+    <label>اسم مدير الشركة<input id="editManagerName" value="${co.manager_name || co.managerName || ''}"></label>
+    <label>المسمى الوظيفي للمدير<input id="editManagerTitle" value="${co.manager_title || co.managerTitle || ''}"></label>
+    <label>رقم واتساب المدير<input id="editManagerPhone" value="${co.manager_phone || co.managerPhone || ''}"></label>
+    <label>رابط صورة المدير الشخصية<input id="editManagerImage" value="${co.manager_image || ''}"></label>
+    <label>رابط السيرة الذاتية (CV)<input id="editManagerCv" value="${co.manager_cv || ''}"></label>
   `;
   $('#saveEditBtn').onclick = async () => {
     const name = $('#editCoName').value.trim();
     const logo_url = $('#editCoImage').value.trim();
-    const { error } = await supabaseClient.from('companies').update({ name, logo_url }).eq('id', id);
+    const manager_name = $('#editManagerName').value.trim();
+    const manager_title = $('#editManagerTitle').value.trim();
+    const manager_phone = $('#editManagerPhone').value.trim();
+    const manager_image = $('#editManagerImage').value.trim();
+    const manager_cv = $('#editManagerCv').value.trim();
+
+    const { error } = await supabaseClient.from('companies').update({ 
+      name, 
+      logo_url, 
+      manager_name, 
+      manager_title, 
+      manager_phone, 
+      manager_image,
+      manager_cv
+    }).eq('id', id);
+
     if(error) return alert('خطأ: ' + error.message);
     closeEditModal();
     if (typeof loadDBFromSupabase === 'function') await loadDBFromSupabase(); 
@@ -545,7 +595,7 @@ window.openEditEmp = id => {
   if(!emp) return;
   $('#modalTitle').textContent = 'تعديل الموظف / الخبير';
   $('#modalBody').innerHTML = `
-    <label>اسم الموظف<input id="editEmpName" value="${emp.name}"></label>
+    <label>اسم الموظف<input id="editEmpName" value="${emp.name || ''}"></label>
     <label>المسمى الوظيفي<input id="editEmpTitle" value="${emp.title || emp.role || ''}"></label>
     <label>رقم الجوال (واتساب)<input id="editEmpPhone" value="${emp.phone || ''}"></label>
     <label>رابط السيرة الذاتية (CV)<input id="editEmpCv" value="${emp.cv_url || emp.cv || ''}"></label>
