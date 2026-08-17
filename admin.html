@@ -132,8 +132,8 @@
       <span class="brand-txt">Your <b>Services</b></span></div>
     <h2 style="text-align:center;font-size:1.1rem">لوحة التحكم</h2>
     <div class="fgrid" style="grid-template-columns:1fr">
-      <label>اسم المستخدم<input id="lu" autocomplete="username" placeholder="Amira 44@superoffice.com"></label>
-      <label>كلمة المرور<input id="lp" type="password" autocomplete="current-password" placeholder="12345"></label>
+      <label>اسم المستخدم<input id="lu" autocomplete="username" placeholder="admin@superoffice.com"></label>
+      <label>كلمة المرور<input id="lp" type="password" autocomplete="current-password" placeholder="admin123"></label>
     </div>
     <button class="btn btn-glow" type="submit">دخول</button>
     <a href="index.html" style="color:var(--mut);font-size:.82rem;text-align:center">← رجوع للموقع</a>
@@ -176,6 +176,7 @@
       <label>اسم مدير الشركة<input id="kManagerName" placeholder="مثال: م. أحمد"></label>
       <label>المسمى الوظيفي للمدير<input id="kManagerTitle" placeholder="مثال: المدير التنفيذي"></label>
       <label>رقم واتساب المدير<input id="kManagerPhone" placeholder="9665xxxxxxxx"></label>
+      <!-- تم الفصل هنا لتصبح الخانات منفصلة تماماً -->
       <label>رابط صورة المدير الشخصية<input id="kManagerImage" placeholder="https://example.com/photo.jpg"></label>
       <label>رابط السيرة الذاتية (CV)<input id="kManagerCv" placeholder="رابط الـ CV أو ملف الـ PDF"></label>
     </div>
@@ -269,10 +270,10 @@ if(loginForm) {
     const enteredPass = $('#lp').value.trim();
     
     const adminUserObj = Array.isArray(DB?.admin_users) ? DB.admin_users[0] : DB?.admin_users;
-    const sysUser = adminUserObj?.email || 'Amira 44@superoffice.com';
-    const sysPass = adminUserObj?.password_hash || '12345';
+    const sysUser = adminUserObj?.email || 'admin@superoffice.com';
+    const sysPass = adminUserObj?.password_hash || 'admin123';
 
-    if((enteredUser === sysUser && enteredPass === sysPass) || (enteredUser === 'Amira 44@superoffice.com' && enteredPass === '12345')){ 
+    if(enteredUser === sysUser && enteredPass === sysPass){ 
       sessionStorage.setItem(SKEY, '1'); 
       showAdmin(); 
     } else {
