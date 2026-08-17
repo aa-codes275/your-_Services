@@ -1,0 +1,662 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>لوحة التحكم | Your Services</title>
+<meta name="robots" content="noindex,nofollow" />
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+<link rel="icon" type="image/png" href="favicon.png">
+<link rel="stylesheet" href="style.css">
+<style>
+  .login-wrap{min-height:100vh;display:grid;place-items:center;padding:20px}
+  .login{width:min(400px,100%);padding:30px;display:grid;gap:14px}
+  .adm{display:none}
+  .adm.on{display:block}
+  .adm-nav{display:flex;gap:8px;flex-wrap:wrap;margin:22px 0}
+  .panel{display:none;padding:22px;margin-bottom:20px}
+  .panel.on{display:block}
+  .tbl{width:100%;border-collapse:collapse;font-size:.86rem;min-width:520px}
+  .tbl th,.tbl td{padding:10px;border-bottom:1px solid var(--stroke);text-align:right}
+  .tbl th{color:var(--mut);font-weight:700;font-size:.8rem}
+  .scroll{overflow-x:auto;-webkit-overflow-scrolling:touch}
+  .mini{display:inline-flex;gap:6px}
+  .ibtn{border:1px solid var(--stroke);background:rgba(255,255,255,.05);color:var(--txt);
+    width:32px;height:32px;border-radius:10px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center}
+  .ibtn.del:hover{background:#ef4444;border-color:transparent}
+  .ibtn.hide-btn:hover{background:var(--warn);border-color:transparent}
+  .ibtn:hover{background:var(--grad);border-color:transparent}
+  .fgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin-bottom:14px}
+  .fgrid label{display:grid;gap:6px;font-size:.82rem;color:var(--mut)}
+  .fgrid input,.fgrid select,.fgrid textarea{background:rgba(255,255,255,.05);border:1px solid var(--stroke);
+    border-radius:12px;padding:10px 12px;color:var(--txt);font:inherit;font-size:.9rem;outline:0;width:100%}
+  .fgrid option{background:#fff}
+  .adm-head{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:12px;align-items:center;padding-top:22px}
+  
+  .cards-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 16px;
+    margin-top: 15px;
+  }
+  .admin-card {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid var(--stroke);
+    border-radius: 16px;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    position: relative;
+    transition: 0.2s;
+  }
+  .admin-card.hidden-item {
+    opacity: 0.5;
+    border-style: dashed;
+  }
+  .admin-card-top {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .admin-card-img {
+    width: 50px;
+    height: 50px;
+    border-radius: 12px;
+    object-fit: cover;
+    background: rgba(255,255,255,0.05);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    color: var(--txt);
+  }
+  .admin-card-info h4 {
+    margin: 0;
+    font-size: 1rem;
+    color: var(--txt);
+  }
+  .admin-card-info span {
+    font-size: 0.8rem;
+    color: var(--mut);
+  }
+  .admin-card-actions {
+    display: flex;
+    gap: 8px;
+    border-top: 1px solid var(--stroke);
+    padding-top: 10px;
+    justify-content: flex-end;
+  }
+
+  .modal-overlay {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0,0,0,0.7); display: none; place-items: center; z-index: 1000; padding: 20px;
+  }
+  .modal-overlay.on { display: grid; }
+  .modal-box {
+    background:#fff; border: 1px solid var(--stroke); border-radius: 20px;
+    padding: 24px; width: min(480px, 100%); display: grid; gap: 14px; max-height: 90vh; overflow-y: auto;
+  }
+
+  @media(max-width:520px){.panel{padding:16px}}
+</style>
+<style>
+  body{background:var(--bg)}
+  .login,.panel,.card{background:#fff}
+  .tbl th{color:var(--mut)}
+  .tbl td{color:var(--txt)}
+  .fgrid input,.fgrid select,.fgrid textarea{background:#fff8fb;border:1px solid var(--stroke);color:var(--txt)}
+  .fgrid input:focus,.fgrid select:focus,.fgrid textarea:focus{border-color:var(--c2);background:#fff}
+  .fgrid option{background:#fff;color:var(--txt)}
+  .ibtn{background:#fff8fb;color:var(--c1);border:1px solid var(--stroke)}
+  .ibtn:hover{background:var(--grad2);color:#fff;border-color:transparent}
+  .ibtn.del:hover{background:#ef4444}
+  .ibtn.hide-btn:hover{background:var(--warn);color:#fff}
+  .admin-card{background:#fff;border:1px solid var(--stroke);box-shadow:var(--sh)}
+  .admin-card:hover{border-color:var(--c3)}
+  .admin-card-img{background:rgba(255,124,192,.14);color:var(--c1)}
+  .admin-card-info h4{color:var(--txt)}
+  .modal-overlay{background:rgba(43,15,31,.35);backdrop-filter:blur(6px)}
+  .modal-box{background:#fff;box-shadow:var(--sh)}
+  .adm-head .brand-txt{color:var(--c1)}
+</style>
+</head>
+<body>
+<div class="aurora"><span></span><span></span><span></span></div>
+
+<!-- LOGIN -->
+<div class="login-wrap" id="loginWrap">
+  <form class="card login" id="loginForm">
+    <div class="brand" style="justify-content:center"><img class="brand-logo" src="logo-mark.png" alt="Your Services" />
+      <span class="brand-txt">Your <b>Services</b></span></div>
+    <h2 style="text-align:center;font-size:1.1rem">لوحة التحكم</h2>
+    <div class="fgrid" style="grid-template-columns:1fr">
+      <label>اسم المستخدم<input id="lu" autocomplete="username" placeholder="admin@superoffice.com"></label>
+      <label>كلمة المرور<input id="lp" type="password" autocomplete="current-password" placeholder="admin123"></label>
+    </div>
+    <button class="btn btn-glow" type="submit">دخول</button>
+    <a href="index.html" style="color:var(--mut);font-size:.82rem;text-align:center">← رجوع للموقع</a>
+  </form>
+</div>
+
+<!-- ADMIN -->
+<div class="adm container" id="adm">
+  <div class="adm-head">
+    <div class="brand"><img class="brand-logo" src="logo-mark.png" alt="Your Services" /><span class="brand-txt">لوحة <b>التحكم</b></span></div>
+    <div class="mini">
+      <a class="btn btn-ghost btn-sm" href="index.html"><i class="fa-solid fa-globe"></i> الموقع</a>
+      <button class="btn btn-ghost btn-sm" id="logout">خروج</button>
+    </div>
+  </div>
+
+  <div class="adm-nav">
+    <button class="chip on" data-p="cats">التصنيفات</button>
+    <button class="chip" data-p="cos">الشركات</button>
+    <button class="chip" data-p="emps">الموظفون</button>
+    <button class="chip" data-p="revs">التقييمات والتعليقات</button>
+    <button class="chip" data-p="set">الإعدادات</button>
+  </div>
+
+  <section class="card panel on" id="p-cats">
+    <h3>التصنيفات</h3>
+    <div class="fgrid">
+      <label>الاسم<input id="cName" placeholder="مثال: خدمات لوجستية"></label>
+    </div>
+    <button class="btn btn-glow btn-sm" id="cAdd"><i class="fa-solid fa-plus"></i> إضافة تصنيف</button>
+    <div class="scroll"><table class="tbl" id="cTbl"></table></div>
+  </section>
+
+  <section class="card panel" id="p-cos">
+    <h3>الشركات ومديروها</h3>
+    <div class="fgrid">
+      <label>اسم الشركة<input id="kName"></label>
+      <label>التصنيف<select id="kCat"></select></label>
+      <label>رابط شعار الشركة (Logo URL)<input id="kImage" placeholder="https://example.com/logo.jpg"></label>
+      <label>اسم مدير الشركة<input id="kManagerName" placeholder="مثال: م. أحمد"></label>
+      <label>المسمى الوظيفي للمدير<input id="kManagerTitle" placeholder="مثال: المدير التنفيذي"></label>
+      <label>رقم واتساب المدير<input id="kManagerPhone" placeholder="9665xxxxxxxx"></label>
+      <!-- تم الفصل هنا لتصبح الخانات منفصلة تماماً -->
+      <label>رابط صورة المدير الشخصية<input id="kManagerImage" placeholder="https://example.com/photo.jpg"></label>
+      <label>رابط السيرة الذاتية (CV)<input id="kManagerCv" placeholder="رابط الـ CV أو ملف الـ PDF"></label>
+    </div>
+    <button class="btn btn-glow btn-sm" id="kAdd"><i class="fa-solid fa-plus"></i> إضافة شركة</button>
+    <div class="cards-grid" id="kCardsGrid"></div>
+  </section>
+
+  <section class="card panel" id="p-emps">
+    <h3>الموظفون</h3>
+    <div class="fgrid">
+      <label>الشركة<select id="eCo"></select></label>
+      <label>الاسم<input id="eName"></label>
+      <label>المسمى الوظيفي<input id="eRole"></label>
+      <label>الجوال (واتساب)<input id="ePhone" placeholder="9665xxxxxxx"></label>
+      <label>رابط السيرة الذاتية (CV)<input id="eCv" placeholder="رابط الـ CV"></label>
+      <label>رابط صورة الموظف (Image URL)<input id="eImage" placeholder="https://example.com/emp.jpg"></label>
+    </div>
+    <button class="btn btn-glow btn-sm" id="eAdd"><i class="fa-solid fa-plus"></i> إضافة موظف</button>
+    <div class="cards-grid" id="eCardsGrid"></div>
+  </section>
+
+  <section class="card panel" id="p-revs">
+    <h3>التقييمات والتعليقات</h3>
+    <div class="cards-grid" id="rCardsGrid"></div>
+  </section>
+
+  <section class="card panel" id="p-set">
+    <h3>الإعدادات</h3>
+    <div class="fgrid">
+      <label>رقم واتساب<input id="sWa" placeholder="966552824188"></label>
+      <label>البريد الإلكتروني العام<input id="sMail"></label>
+      <label>إيميل الأدمن (تسجيل الدخول)<input id="sUser"></label>
+      <label>كلمة مرور الأدمن<input id="sPass"></label>
+    </div>
+    <button class="btn btn-glow btn-sm" id="sSave"><i class="fa-solid fa-floppy-disk"></i> حفظ التعديلات</button>
+  </section>
+</div>
+
+<div class="modal-overlay" id="editModal">
+  <div class="modal-box">
+    <h3 id="modalTitle">تعديل البيانات</h3>
+    <div id="modalBody" class="fgrid" style="grid-template-columns:1fr"></div>
+    <div style="display:flex;gap:10px;justify-content:flex-end">
+      <button class="btn btn-ghost btn-sm" type="button" onclick="closeEditModal()">إلغاء</button>
+      <button class="btn btn-glow btn-sm" type="button" id="saveEditBtn">حفظ التغييرات</button>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="script.js"></script>
+<script>
+const $ = s => document.querySelector(s);
+const SKEY = 'ys_admin_ok';
+
+if (typeof DB !== 'undefined' && DB.settings) {
+  if (Array.isArray(DB.settings)) {
+    if (DB.settings.length > 0) DB.settings[0].whatsapp = DB.settings[0].whatsapp || '966552824188';
+  } else {
+    DB.settings.whatsapp = DB.settings.whatsapp || '966552824188';
+  }
+}
+
+async function showAdmin(){ 
+  const wrap = $('#loginWrap');
+  if(wrap) wrap.style.display = 'none'; 
+  const adm = $('#adm');
+  if(adm) adm.classList.add('on'); 
+  if (typeof loadDBFromSupabase === 'function') {
+    await loadDBFromSupabase();
+  }
+  renderAll(); 
+}
+
+if(sessionStorage.getItem(SKEY)==='1') {
+  showAdmin();
+} else {
+  if (typeof loadDBFromSupabase === 'function') {
+    loadDBFromSupabase();
+  }
+}
+
+const loginForm = $('#loginForm');
+if(loginForm) {
+  loginForm.onsubmit = async e => {
+    e.preventDefault();
+    if (typeof loadDBFromSupabase === 'function') {
+      await loadDBFromSupabase();
+    }
+    const enteredUser = $('#lu').value.trim();
+    const enteredPass = $('#lp').value.trim();
+    
+    const adminUserObj = Array.isArray(DB?.admin_users) ? DB.admin_users[0] : DB?.admin_users;
+    const sysUser = adminUserObj?.email || 'admin@superoffice.com';
+    const sysPass = adminUserObj?.password_hash || 'admin123';
+
+    if(enteredUser === sysUser && enteredPass === sysPass){ 
+      sessionStorage.setItem(SKEY, '1'); 
+      showAdmin(); 
+    } else {
+      alert('اسم المستخدم أو كلمة المرور غير صحيحة');
+    }
+  };
+}
+
+const logoutBtn = $('#logout');
+if(logoutBtn) {
+  logoutBtn.onclick = () => { 
+    sessionStorage.removeItem(SKEY); 
+    location.reload(); 
+  };
+}
+
+document.querySelectorAll('.adm-nav .chip').forEach(b => {
+  b.onclick = () => {
+    document.querySelectorAll('.adm-nav .chip').forEach(x => x.classList.remove('on'));
+    document.querySelectorAll('.panel').forEach(x => x.classList.remove('on'));
+    b.classList.add('on'); 
+    const panel = $('#p-' + b.dataset.p);
+    if(panel) panel.classList.add('on');
+  };
+});
+
+function renderAll(){ rCats(); rCos(); rEmps(); rRevs(); rSet(); fillSelects(); }
+
+function fillSelects(){
+  const kCat = $('#kCat');
+  const eCo = $('#eCo');
+  if(kCat && DB.categories) kCat.innerHTML = DB.categories.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
+  if(eCo && DB.companies) eCo.innerHTML = DB.companies.map(k => `<option value="${k.id}">${k.name}</option>`).join('');
+}
+
+function rCats(){
+  const cTbl = $('#cTbl');
+  if(!cTbl) return;
+  cTbl.innerHTML = `<tr><th>التصنيف</th><th>الشركات</th><th></th></tr>` +
+    (DB.categories || []).map(c => `<tr><td>${c.name}</td>
+      <td>${(DB.companies || []).filter(k => String(k.category_id || k.catId) === String(c.id)).length}</td>
+      <td class="mini">
+      <button class="ibtn del" type="button" onclick="delCat('${c.id}')"><i class="fa-solid fa-trash"></i></button></td></tr>`).join('');
+}
+
+const cAddBtn = $('#cAdd');
+if(cAddBtn) {
+  cAddBtn.onclick = async () => {
+    const nameInput = $('#cName');
+    const name = nameInput ? nameInput.value.trim() : '';
+    if(!name) return alert('أدخل اسم التصنيف');
+    const { error } = await supabaseClient.from('categories').insert([{ name }]);
+    if(error) return alert('خطأ: ' + error.message);
+    if (typeof loadDBFromSupabase === 'function') await loadDBFromSupabase(); 
+    renderAll();
+    if(nameInput) nameInput.value = '';
+  };
+}
+
+window.delCat = async id => { 
+  if(!confirm('حذف التصنيف؟')) return;
+  await supabaseClient.from('categories').delete().eq('id', id);
+  if (typeof loadDBFromSupabase === 'function') await loadDBFromSupabase(); 
+  renderAll(); 
+};
+
+function rCos(){
+  const grid = $('#kCardsGrid');
+  if(!grid) return;
+  grid.innerHTML = (DB.companies || []).map(k => {
+    const c = (DB.categories || []).find(x => String(x.id) === String(k.category_id || k.catId));
+    const isHidden = k.isHidden || k.is_hidden;
+    const logoUrl = k.logo_url || k.image;
+    const mgrName = k.manager_name || k.managerName;
+    const mgrTitle = k.manager_title || k.managerTitle;
+    
+    return `
+      <div class="admin-card ${isHidden ? 'hidden-item' : ''}">
+        <div class="admin-card-top">
+          ${logoUrl ? `<img src="${logoUrl}" class="admin-card-img">` : `<div class="admin-card-img"><i class="fa-solid fa-building"></i></div>`}
+          <div class="admin-card-info">
+            <h4>${k.name}</h4>
+            <span>التصنيف: ${c ? c.name : '—'}</span>
+            ${mgrName ? `<div style="font-size:0.75rem;color:var(--c3);margin-top:2px">المدير: ${mgrName} (${mgrTitle || 'مدير تنفيذي'})</div>` : ''}
+            ${isHidden ? '<div style="color:var(--warn);font-size:0.75rem">مخفي عن الزوار</div>' : ''}
+          </div>
+        </div>
+        <div class="admin-card-actions">
+          <button class="ibtn hide-btn" type="button" title="${isHidden ? 'إظهار' : 'إخفاء'}" onclick="toggleHideCo('${k.id}', ${!isHidden})"><i class="fa-solid ${isHidden ? 'fa-eye' : 'fa-eye-slash'}"></i></button>
+          <button class="ibtn" type="button" title="تعديل" onclick="openEditCo('${k.id}')"><i class="fa-solid fa-pen"></i></button>
+          <button class="ibtn del" type="button" title="حذف" onclick="delCo('${k.id}')"><i class="fa-solid fa-trash"></i></button>
+        </div>
+      </div>
+    `;
+  }).join('') || '<p style="color:var(--mut)">لا توجد شركات مضافة.</p>';
+}
+
+const kAddBtn = $('#kAdd');
+if(kAddBtn) {
+  kAddBtn.onclick = async () => {
+    const kName = $('#kName');
+    const kCat = $('#kCat');
+    const kImage = $('#kImage');
+    const kManagerName = $('#kManagerName');
+    const kManagerTitle = $('#kManagerTitle');
+    const kManagerPhone = $('#kManagerPhone');
+    const kManagerImage = $('#kManagerImage');
+    const kManagerCv = $('#kManagerCv');
+
+    const name = kName ? kName.value.trim() : '';
+    if(!name) return alert('أدخل اسم الشركة');
+    
+    const newCo = {
+      name, 
+      category_id: kCat ? parseInt(kCat.value) : null, 
+      logo_url: kImage ? kImage.value.trim() : '',
+      manager_name: kManagerName ? kManagerName.value.trim() : '',
+      manager_title: kManagerTitle ? kManagerTitle.value.trim() : '',
+      manager_phone: kManagerPhone ? kManagerPhone.value.trim() : '',
+      manager_image: kManagerImage ? kManagerImage.value.trim() : '',
+      manager_cv: kManagerCv ? kManagerCv.value.trim() : ''
+    };
+
+    const { error } = await supabaseClient.from('companies').insert([newCo]);
+    if(error) return alert('خطأ: ' + error.message);
+    if (typeof loadDBFromSupabase === 'function') await loadDBFromSupabase(); 
+    renderAll();
+    
+    if(kName) kName.value = ''; 
+    if(kImage) kImage.value = '';
+    if(kManagerName) kManagerName.value = '';
+    if(kManagerTitle) kManagerTitle.value = '';
+    if(kManagerPhone) kManagerPhone.value = '';
+    if(kManagerImage) kManagerImage.value = '';
+    if(kManagerCv) kManagerCv.value = '';
+  };
+}
+
+window.delCo = async id => {
+  if(!confirm('حذف الشركة؟')) return;
+  await supabaseClient.from('companies').delete().eq('id', id);
+  if (typeof loadDBFromSupabase === 'function') await loadDBFromSupabase(); 
+  renderAll();
+};
+
+window.toggleHideCo = async (id, status) => {
+  await supabaseClient.from('companies').update({ is_hidden: status }).eq('id', id);
+  if (typeof loadDBFromSupabase === 'function') await loadDBFromSupabase(); 
+  renderAll();
+};
+
+function rEmps(){
+  const grid = $('#eCardsGrid');
+  if(!grid) return;
+  grid.innerHTML = (DB.employees || []).map(e => {
+    const k = (DB.companies || []).find(x => String(x.id) === String(e.company_id || e.companyId));
+    const isHidden = e.isHidden || e.is_hidden;
+    const imgUrl = e.image_url || e.image;
+    return `
+      <div class="admin-card ${isHidden ? 'hidden-item' : ''}">
+        <div class="admin-card-top">
+          ${imgUrl ? `<img src="${imgUrl}" class="admin-card-img" style="border-radius:50%">` : `<div class="admin-card-img" style="border-radius:50%"><i class="fa-solid fa-user"></i></div>`}
+          <div class="admin-card-info">
+            <h4>${e.name}</h4>
+            <span>${e.title || e.role || 'بدون مسمى'}</span>
+            <div style="font-size:0.75rem;color:var(--c2)">${k ? k.name : '—'}</div>
+            ${isHidden ? '<div style="color:var(--warn);font-size:0.75rem">مخفي عن الزوار</div>' : ''}
+          </div>
+        </div>
+        <div class="admin-card-actions">
+          <button class="ibtn hide-btn" type="button" title="${isHidden ? 'إظهار' : 'إخفاء'}" onclick="toggleHideEmp('${e.id}', ${!isHidden})"><i class="fa-solid ${isHidden ? 'fa-eye' : 'fa-eye-slash'}"></i></button>
+          <button class="ibtn" type="button" title="تعديل" onclick="openEditEmp('${e.id}')"><i class="fa-solid fa-pen"></i></button>
+          <button class="ibtn del" type="button" title="حذف" onclick="delEmp('${e.id}')"><i class="fa-solid fa-trash"></i></button>
+        </div>
+      </div>
+    `;
+  }).join('') || '<p style="color:var(--mut)">لا يوجد موظفون مضافون.</p>';
+}
+
+const eAddBtn = $('#eAdd');
+if(eAddBtn) {
+  eAddBtn.onclick = async () => {
+    const eCo = $('#eCo');
+    const eName = $('#eName');
+    const coId = eCo ? eCo.value : '';
+    const name = eName ? eName.value.trim() : '';
+    if(!coId || !name) return alert('أدخل البيانات الأساسية للموظف');
+    const newEmp = {
+      company_id: parseInt(coId), 
+      name, 
+      title: $('#eRole') ? $('#eRole').value.trim() : '', 
+      phone: $('#ePhone') ? $('#ePhone').value.trim() : '', 
+      cv_url: $('#eCv') ? $('#eCv').value.trim() : '',
+      image_url: $('#eImage') ? $('#eImage').value.trim() : ''
+    };
+    const { error } = await supabaseClient.from('employees').insert([newEmp]);
+    if(error) return alert('خطأ: ' + error.message);
+    if (typeof loadDBFromSupabase === 'function') await loadDBFromSupabase(); 
+    renderAll();
+    if($('#eName')) $('#eName').value = ''; 
+    if($('#eRole')) $('#eRole').value = ''; 
+    if($('#ePhone')) $('#ePhone').value = ''; 
+    if($('#eCv')) $('#eCv').value = ''; 
+    if($('#eImage')) $('#eImage').value = '';
+  };
+}
+
+window.delEmp = async id => {
+  if(!confirm('حذف الموظف؟')) return;
+  await supabaseClient.from('employees').delete().eq('id', id);
+  if (typeof loadDBFromSupabase === 'function') await loadDBFromSupabase(); 
+  renderAll();
+};
+
+window.toggleHideEmp = async (id, status) => {
+  await supabaseClient.from('employees').update({ is_hidden: status }).eq('id', id);
+  if (typeof loadDBFromSupabase === 'function') await loadDBFromSupabase(); 
+  renderAll();
+};
+
+function rRevs(){
+  const grid = $('#rCardsGrid');
+  if(!grid) return;
+  
+  grid.innerHTML = (DB.reviews || []).map(r => {
+    const emp = (DB.employees || []).find(x => String(x.id) === String(r.employee_id || r.empId));
+    const isHidden = r.isHidden || r.is_hidden;
+    
+    return `
+      <div class="admin-card ${isHidden ? 'hidden-item' : ''}">
+        <div class="admin-card-top" style="align-items:flex-start">
+          <div class="admin-card-img" style="background:rgba(255,194,71,.12); color:var(--warn);">
+            <i class="fa-solid fa-star"></i>
+          </div>
+          <div class="admin-card-info" style="width:100%">
+            <div style="display:flex; justify-content:space-between; align-items:center">
+              <h4>${r.name || 'عميل'}</h4>
+              <span style="color:var(--warn)">${'★'.repeat(r.stars || r.rating_stars || 5)}</span>
+            </div>
+            <span style="font-size:0.75rem; color:var(--c2)">للموظف/الخبير: ${emp ? emp.name : '—'}</span>
+            <p style="margin:8px 0; font-size:0.85rem; color:var(--txt); background:rgba(255,255,255,0.02); padding:8px; border-radius:8px;">${r.text || r.comment_text || ''}</p>
+            ${isHidden ? '<div style="color:var(--warn);font-size:0.75rem">مخفي عن الزوار</div>' : ''}
+          </div>
+        </div>
+        <div class="admin-card-actions">
+          <button class="ibtn hide-btn" type="button" title="${isHidden ? 'إظهار' : 'إخفاء'}" onclick="toggleHideRev('${r.id}', ${!isHidden})">
+            <i class="fa-solid ${isHidden ? 'fa-eye' : 'fa-eye-slash'}"></i>
+          </button>
+          <button class="ibtn del" type="button" title="حذف" onclick="delRev('${r.id}')">
+            <i class="fa-solid fa-trash"></i>
+          </button>
+        </div>
+      </div>
+    `;
+  }).join('') || '<p style="color:var(--mut)">لا توجد تقييمات مضافة.</p>';
+}
+
+window.delRev = async id => {
+  if(!confirm('حذف التقييم؟')) return;
+  await supabaseClient.from('reviews').delete().eq('id', id);
+  if (typeof loadDBFromSupabase === 'function') await loadDBFromSupabase(); 
+  renderAll();
+};
+
+window.toggleHideRev = async (id, status) => {
+  await supabaseClient.from('reviews').update({ is_hidden: status }).eq('id', id);
+  if (typeof loadDBFromSupabase === 'function') await loadDBFromSupabase(); 
+  renderAll();
+};
+
+function closeEditModal() {
+  const modal = $('#editModal');
+  if(modal) modal.classList.remove('on');
+}
+
+window.openEditCo = id => {
+  const co = DB.companies.find(x => String(x.id) === String(id));
+  if(!co) return;
+  $('#modalTitle').textContent = 'تعديل الشركة ومديرها التنفيذي';
+  $('#modalBody').innerHTML = `
+    <label>اسم الشركة<input id="editCoName" value="${co.name || ''}"></label>
+    <label>رابط الشعار (Logo URL)<input id="editCoImage" value="${co.logo_url || co.image || ''}"></label>
+    <hr style="border:0;border-top:1px solid var(--stroke);margin:5px 0">
+    <label>اسم مدير الشركة<input id="editManagerName" value="${co.manager_name || co.managerName || ''}"></label>
+    <label>المسمى الوظيفي للمدير<input id="editManagerTitle" value="${co.manager_title || co.managerTitle || ''}"></label>
+    <label>رقم واتساب المدير<input id="editManagerPhone" value="${co.manager_phone || co.managerPhone || ''}"></label>
+    <label>رابط صورة المدير الشخصية<input id="editManagerImage" value="${co.manager_image || ''}"></label>
+    <label>رابط السيرة الذاتية (CV)<input id="editManagerCv" value="${co.manager_cv || ''}"></label>
+  `;
+  $('#saveEditBtn').onclick = async () => {
+    const name = $('#editCoName').value.trim();
+    const logo_url = $('#editCoImage').value.trim();
+    const manager_name = $('#editManagerName').value.trim();
+    const manager_title = $('#editManagerTitle').value.trim();
+    const manager_phone = $('#editManagerPhone').value.trim();
+    const manager_image = $('#editManagerImage').value.trim();
+    const manager_cv = $('#editManagerCv').value.trim();
+
+    const { error } = await supabaseClient.from('companies').update({ 
+      name, 
+      logo_url, 
+      manager_name, 
+      manager_title, 
+      manager_phone, 
+      manager_image,
+      manager_cv
+    }).eq('id', id);
+
+    if(error) return alert('خطأ: ' + error.message);
+    closeEditModal();
+    if (typeof loadDBFromSupabase === 'function') await loadDBFromSupabase(); 
+    renderAll();
+  };
+  $('#editModal').classList.add('on');
+};
+
+window.openEditEmp = id => {
+  const emp = DB.employees.find(x => String(x.id) === String(id));
+  if(!emp) return;
+  $('#modalTitle').textContent = 'تعديل الموظف / الخبير';
+  $('#modalBody').innerHTML = `
+    <label>اسم الموظف<input id="editEmpName" value="${emp.name || ''}"></label>
+    <label>المسمى الوظيفي<input id="editEmpTitle" value="${emp.title || emp.role || ''}"></label>
+    <label>رقم الجوال (واتساب)<input id="editEmpPhone" value="${emp.phone || ''}"></label>
+    <label>رابط السيرة الذاتية (CV)<input id="editEmpCv" value="${emp.cv_url || emp.cv || ''}"></label>
+    <label>رابط الصورة الشخصية<input id="editEmpImage" value="${emp.image_url || emp.image || ''}"></label>
+  `;
+  $('#saveEditBtn').onclick = async () => {
+    const name = $('#editEmpName').value.trim();
+    const title = $('#editEmpTitle').value.trim();
+    const phone = $('#editEmpPhone').value.trim();
+    const cv_url = $('#editEmpCv').value.trim();
+    const image_url = $('#editEmpImage').value.trim();
+
+    const { error } = await supabaseClient.from('employees').update({ name, title, phone, cv_url, image_url }).eq('id', id);
+    if(error) return alert('خطأ: ' + error.message);
+    closeEditModal();
+    if (typeof loadDBFromSupabase === 'function') await loadDBFromSupabase(); 
+    renderAll();
+  };
+  $('#editModal').classList.add('on');
+};
+
+function rSet(){
+  const currentSettings = Array.isArray(DB.settings) ? DB.settings[0] : DB.settings;
+  if(currentSettings){
+    if($('#sWa')) $('#sWa').value = currentSettings.whatsapp || '0552824188'; 
+    if($('#sMail')) $('#sMail').value = currentSettings.email || '';
+  } else {
+    if($('#sWa')) $('#sWa').value = '0552824188';
+  }
+  
+  const adminObj = Array.isArray(DB.admin_users) ? DB.admin_users[0] : DB.admin_users;
+  if(adminObj){
+    if($('#sUser')) $('#sUser').value = adminObj.email || ''; 
+    if($('#sPass')) $('#sPass').value = adminObj.password_hash || '';
+  }
+}
+
+const sSaveBtn = $('#sSave');
+if(sSaveBtn) {
+  sSaveBtn.onclick = async () => {
+    const newEmail = $('#sUser') ? $('#sUser').value.trim() : '';
+    const newPass = $('#sPass') ? $('#sPass').value.trim() : '';
+    const newWa = $('#sWa') ? $('#sWa').value.trim() : '';
+    const newSiteMail = $('#sMail') ? $('#sMail').value.trim() : '';
+
+    const currentSettings = Array.isArray(DB.settings) ? DB.settings[0] : DB.settings;
+    const currentAdmin = Array.isArray(DB.admin_users) ? DB.admin_users[0] : DB.admin_users;
+    
+    const settingId = currentSettings?.id || 1;
+    const adminId = currentAdmin?.id || 1;
+
+    await Promise.all([
+      supabaseClient.from('admin_users').update({ email: newEmail, password_hash: newPass }).eq('id', adminId),
+      supabaseClient.from('settings').update({ whatsapp: newWa, email: newSiteMail }).eq('id', settingId)
+    ]);
+
+    if (typeof loadDBFromSupabase === 'function') await loadDBFromSupabase();
+    if (typeof updateWhatsAppLinks === 'function') updateWhatsAppLinks();
+    alert('تم حفظ الإعدادات وتحديث رقم الواتساب بنجاح ✔');
+  };
+}
+</script>
+</body>
+</html>
